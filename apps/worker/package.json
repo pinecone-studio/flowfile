@@ -8,10 +8,15 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.1",
+    "graphql": "^16.13.1",
+    "graphql-yoga": "^5.18.1",
     "hono": "^4.12.6"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260310.1",
+    "add": "^2.0.6",
+    "drizzle-kit": "^0.31.9",
     "typescript": "^5.9.3",
     "wrangler": "^4.71.0"
   }

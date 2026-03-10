@@ -1,12 +1,19 @@
 {
-  "name": "team4-epas-worker",
-  "compatibility_date": "2026-03-10",
-  "main": "src/index.ts",
-  "d1_databases": [
-    {
-      "binding": "epas_db",
-      "database_name": "epas-db",
-      "database_id": "90fcefdd-724b-49f9-9d05-a7be6d9bfd1c"
-    }
-  ]
+	"name": "team4-epas-worker",
+	"compatibility_date": "2026-03-10",
+	"main": "src/index.ts",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "epas-db",
+			"database_id": "90fcefdd-724b-49f9-9d05-a7be6d9bfd1c"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "DOCS_BUCKET",
+			"bucket_name": "epas-docs",
+			"preview_bucket_name": "epas-docs"
+		}
+	]
 }
