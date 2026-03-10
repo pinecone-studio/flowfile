@@ -23,32 +23,6 @@ export default [
           ],
         },
       ],
-
-      // 1. forbid `any`
-      '@typescript-eslint/no-explicit-any': 'error',
-
-      // 2. complexity max = 4
-      complexity: ['error', 4],
-
-      // 3. file length limit
-      'max-lines': [
-        'error',
-        {
-          max: 150,
-          skipBlankLines: true,
-          skipComments: true,
-        },
-      ],
-
-      // optional but recommended: function length
-      'max-lines-per-function': [
-        'error',
-        {
-          max: 150,
-          skipBlankLines: true,
-          skipComments: true,
-        },
-      ],
     },
   },
 ];

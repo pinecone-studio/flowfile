@@ -38,11 +38,17 @@ jobs:
       - name: Lint workspace
         run: npx nx run-many -t lint --projects=shadcn,ebms,ebms-e2e --parallel=3
 
-      - name: Typecheck workspace
-        run: npx nx run-many -t typecheck --projects=shadcn,ebms-e2e --parallel=2
+      - name: Typecheck ebms
+        run: npx tsc -p apps/ebms/tsconfig.json --noEmit
+
+      - name: Typecheck shadcn
+        run: npx tsc -p libs/shadcn/tsconfig.lib.json --noEmit
+
+      - name: Typecheck worker
+        run: npx tsc -p apps/worker/tsconfig.json --noEmit
 
       - name: Test app
         run: npx nx run ebms:test
 
       - name: Build app
-        run: npx nx run ebms:build -- --webpack
+        run: npx nx run ebms:build
