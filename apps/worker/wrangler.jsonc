@@ -1,0 +1,12 @@
+{
+  "name": "team4-epas-worker",
+  "compatibility_date": "2026-03-10",
+  "main": "src/index.ts",
+  "d1_databases": [
+    {
+      "binding": "epas_db",
+      "database_name": "epas-db",
+      "database_id": "90fcefdd-724b-49f9-9d05-a7be6d9bfd1c"
+    }
+  ]
+}
