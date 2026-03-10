@@ -1,5 +1,5 @@
 {
-  "name": "@my-workspace/ebms",
+  "name": "ebms",
   "version": "0.0.1",
   "private": true,
   "dependencies": {

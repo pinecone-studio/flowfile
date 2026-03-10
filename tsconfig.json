@@ -8,6 +8,9 @@
     },
     {
       "path": "./apps/ebms"
+    },
+    {
+      "path": "./libs/shadcn"
     }
   ]
 }

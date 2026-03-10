@@ -1,10 +1,10 @@
 {
-  "name": "@my-workspace/ebms-e2e",
+  "name": "ebms-e2e",
   "version": "0.0.1",
   "private": true,
   "nx": {
     "implicitDependencies": [
-      "@my-workspace/ebms"
+      "ebms"
     ]
   }
 }

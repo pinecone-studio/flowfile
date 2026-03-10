@@ -1,3 +1,15 @@
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@team-4/shadcn';
+
 export default function Index() {
   /*
    * Replace the elements below with your own.
@@ -9,7 +21,32 @@ export default function Index() {
       <div className="wrapper">
         <div className="container">
           <div id="welcome">
+            <Button variant={"destructive"}>hekkooo</Button>
+            <Dialog>
+              <form>
+                <DialogTrigger asChild>
+                  <Button variant="outline">Open Dialog</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Edit profile</DialogTitle>
+                    <DialogDescription>
+                      Make changes to your profile here. Click save when
+                      you&apos;re done.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit">Save changes</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </form>
+            </Dialog>
             <h1>
+              <div>dkfhsdhflsdksjfdghifog</div>
               <span> Hello there, </span>
               Welcome @my-workspace/ebms 👋
             </h1>
