@@ -2,8 +2,11 @@
   "name": "ebms",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "build": "next build",
+    "deploy:pages": "wrangler pages deploy out --project-name ebms"
+  },
   "dependencies": {
-    "@clerk/nextjs": "^7.0.2",
     "next": "~16.0.11",
     "react": "~19.2.4",
     "react-dom": "~19.2.4"

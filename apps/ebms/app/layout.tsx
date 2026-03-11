@@ -1,4 +1,3 @@
-import { ClerkProvider } from '@clerk/nextjs';
 import './global.css';
 
 export const metadata = {
@@ -12,9 +11,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <ClerkProvider>{children}</ClerkProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

@@ -9,6 +9,19 @@ export default [
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
+       "@typescript-eslint/naming-convention": [
+      "error",
+
+      {
+        selector: "variableLike",
+        format: ["camelCase"]
+      },
+
+      {
+        selector: "typeLike",
+        format: ["PascalCase"]
+      }
+    ],
       '@typescript-eslint/no-explicit-any': 'error',
       complexity: ['error', 4],
       'max-lines': [
