@@ -1,6 +1,11 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "composite": true,
+    "paths": {
+      "@team-4/shadcn": ["libs/shadcn/src/index.ts"],
+      "@team-4/shadcn/server": ["libs/shadcn/src/server.ts"]
+    },
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "importHelpers": true,

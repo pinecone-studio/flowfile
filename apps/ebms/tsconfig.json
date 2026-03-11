@@ -19,7 +19,7 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["jest", "node"],
+    "types": ["node", "react", "react-dom"],
     "outDir": "dist",
     "rootDir": "."
   },
