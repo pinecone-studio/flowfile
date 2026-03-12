@@ -5,10 +5,6 @@ module.exports = {
   darkMode: ['class'],
   content: [
     join(__dirname, '{src,pages,components,app}/**/*.{ts,tsx,js,jsx,html,mdx}'),
-    join(
-      __dirname,
-      '../../libs/shadcn/src/**/*.{ts,tsx,js,jsx,html,mdx}',
-    ),
   ],
   theme: {
     extend: {
