@@ -1,7 +1,7 @@
 import './global.css';
 
 export const metadata = {
-  title: 'Pinecone dash',
+  title: 'FlowFile',
   icons: {
     icon: [
       { url: '/favicon-light.svg', media: '(prefers-color-scheme: light)' },
