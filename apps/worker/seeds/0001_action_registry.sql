@@ -1,0 +1,69 @@
+INSERT INTO action_registry (
+  action_name,
+  phase,
+  trigger_fields_json,
+  trigger_condition,
+  documents_json,
+  recipients_json,
+  is_active,
+  created_at,
+  updated_at
+) VALUES
+(
+  'add_employee',
+  'onboarding',
+  '["status","hireDate"]',
+  'status === ACTIVE && isNewRecord',
+  '[
+    {"id":"employment_contract","template":"employment_contract.docx","order":1},
+    {"id":"probation_order","template":"probation_order.docx","order":2},
+    {"id":"job_description","template":"job_description.docx","order":3},
+    {"id":"nda","template":"nda.docx","order":4}
+  ]',
+  '["hr_team","department_chief","branch_manager"]',
+  1,
+  datetime('now'),
+  datetime('now')
+),
+(
+  'promote_employee',
+  'working',
+  '["level","numberOfVacationDays","isSalaryCompany"]',
+  NULL,
+  '[
+    {"id":"salary_increase_order","template":"salary_increase_order.docx","order":1}
+  ]',
+  '["hr_team","department_chief"]',
+  1,
+  datetime('now'),
+  datetime('now')
+),
+(
+  'change_position',
+  'working',
+  '["department","branch","level"]',
+  NULL,
+  '[
+    {"id":"job_description","template":"job_description.docx","order":1},
+    {"id":"position_update_order","template":"position_update_order.docx","order":2},
+    {"id":"contract_addendum","template":"contract_addendum.docx","order":3}
+  ]',
+  '["hr_team","department_chief","branch_manager"]',
+  1,
+  datetime('now'),
+  datetime('now')
+),
+(
+  'offboard_employee',
+  'offboarding',
+  '["terminationDate","status"]',
+  NULL,
+  '[
+    {"id":"termination_order","template":"termination_order.docx","order":1},
+    {"id":"handover_sheet","template":"handover_sheet.docx","order":2}
+  ]',
+  '["hr_team","department_chief","ceo"]',
+  1,
+  datetime('now'),
+  datetime('now')
+);

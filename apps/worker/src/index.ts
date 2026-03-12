@@ -30,4 +30,17 @@ app.get('/r2-test', async (c) => {
   });
 });
 
+app.get('/db-tables', async (c) => {
+  const result = await c.env.DB.prepare(
+    `
+      SELECT name
+      FROM sqlite_master
+      WHERE type='table'
+      ORDER BY name
+    `,
+  ).all();
+
+  return c.json(result);
+});
+
 export default app;
