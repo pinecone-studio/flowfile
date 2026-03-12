@@ -63,6 +63,20 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Validate Cloudflare auth
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || {
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_API_TOKEN"
+            exit 1
+          }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || {
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_ACCOUNT_ID"
+            exit 1
+          }
+
       - name: Build ebms static export
         run: yarn workspace ebms build
 
@@ -90,6 +104,20 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Validate Cloudflare auth
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || {
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_API_TOKEN"
+            exit 1
+          }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || {
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_ACCOUNT_ID"
+            exit 1
+          }
 
       - name: Deploy worker with Wrangler
         run: npx wrangler deploy --config apps/worker/wrangler.jsonc
