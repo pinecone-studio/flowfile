@@ -561,3 +561,12 @@ summary svg {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+.logo {
+  color: black;
+}
+
+@media (prefers-color-scheme: dark) {
+  .logo {
+    color: white;
+  }
+}
