@@ -16,13 +16,13 @@ export function SidebarNavItem({
     <Link
       href={item.href}
       className={[
-        'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+        'mx-0 flex h-[32px] items-center gap-3 rounded-none px-4 text-[14px] transition-colors',
         isActive
-          ? 'bg-white font-medium text-slate-900 shadow-sm'
-          : 'text-slate-600 hover:bg-white hover:text-slate-900',
+          ? 'bg-white font-medium text-[#111827]'
+          : 'text-[#2f3440] hover:bg-white/80 hover:text-[#111827]',
       ].join(' ')}
     >
-      <Icon className="h-4 w-4 shrink-0" />
+      <Icon className="h-4 w-4 shrink-0" strokeWidth={1.7} />
       <span>{item.label}</span>
     </Link>
   );

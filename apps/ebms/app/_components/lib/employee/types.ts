@@ -1,16 +1,22 @@
-export type EmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'TERMINATED';
+export type EmployeeStatus = '' | 'ACTIVE' | 'INACTIVE' | 'TERMINATED';
+export type BinaryChoice = '' | 'YES' | 'NO';
 
 export type AddEmployeeFieldName =
   | 'firstName'
   | 'lastName'
   | 'firstNameEng'
   | 'lastNameEng'
+  | 'birthMonth'
+  | 'birthDay'
   | 'email'
   | 'employeeCode'
   | 'department'
   | 'branch'
-  | 'level'
+  | 'positionTitle'
   | 'hireDate'
+  | 'annualVacationDays'
+  | 'kpiEligible'
+  | 'salaryFromCompany'
   | 'status';
 
 export type AddEmployeeFormData = {
@@ -18,12 +24,17 @@ export type AddEmployeeFormData = {
   lastName: string;
   firstNameEng: string;
   lastNameEng: string;
+  birthMonth: string;
+  birthDay: string;
   email: string;
   employeeCode: string;
   department: string;
   branch: string;
-  level: string;
+  positionTitle: string;
   hireDate: string;
+  annualVacationDays: string;
+  kpiEligible: BinaryChoice;
+  salaryFromCompany: BinaryChoice;
   status: EmployeeStatus;
 };
 

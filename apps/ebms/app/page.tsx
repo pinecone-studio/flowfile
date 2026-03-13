@@ -1,10 +1,5 @@
-import HomePage from "./HomePage";
-
+import HomePage from './HomePage';
 
 export default function Index() {
-  return (
-    <div>
-      <HomePage />
-    </div>
-  );
+  return <HomePage />;
 }

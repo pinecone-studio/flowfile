@@ -10,6 +10,9 @@ const nextConfig = {
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {},
   output: 'export',
+  images: {
+    unoptimized: true,
+  },
 };
 
 const plugins = [

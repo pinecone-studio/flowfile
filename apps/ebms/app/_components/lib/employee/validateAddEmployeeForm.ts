@@ -42,35 +42,8 @@ const validateLastName = (form: AddEmployeeFormData): ValidationResult => {
   );
 };
 
-const validateFirstNameEng = (
-  form: AddEmployeeFormData
-): ValidationResult => {
-  return createRequiredValidator(
-    form.firstNameEng,
-    'firstNameEng',
-    'English first name is required'
-  );
-};
-
-const validateLastNameEng = (
-  form: AddEmployeeFormData
-): ValidationResult => {
-  return createRequiredValidator(
-    form.lastNameEng,
-    'lastNameEng',
-    'English last name is required'
-  );
-};
-
 const validateEmail = (form: AddEmployeeFormData): ValidationResult => {
-  if (isEmpty(form.email)) {
-    return {
-      field: 'email',
-      message: 'Email is required',
-    };
-  }
-
-  return isInvalidEmail(form.email)
+  return !isEmpty(form.email) && isInvalidEmail(form.email)
     ? {
         field: 'email',
         message: 'Email is invalid',
@@ -100,8 +73,14 @@ const validateBranch = (form: AddEmployeeFormData): ValidationResult => {
   return createRequiredValidator(form.branch, 'branch', 'Branch is required');
 };
 
-const validateLevel = (form: AddEmployeeFormData): ValidationResult => {
-  return createRequiredValidator(form.level, 'level', 'Level is required');
+const validatePositionTitle = (
+  form: AddEmployeeFormData
+): ValidationResult => {
+  return createRequiredValidator(
+    form.positionTitle,
+    'positionTitle',
+    'Position title is required'
+  );
 };
 
 const validateHireDate = (form: AddEmployeeFormData): ValidationResult => {
@@ -115,13 +94,11 @@ const validateHireDate = (form: AddEmployeeFormData): ValidationResult => {
 const validators = [
   validateFirstName,
   validateLastName,
-  validateFirstNameEng,
-  validateLastNameEng,
   validateEmail,
   validateEmployeeCode,
   validateDepartment,
   validateBranch,
-  validateLevel,
+  validatePositionTitle,
   validateHireDate,
 ];
 

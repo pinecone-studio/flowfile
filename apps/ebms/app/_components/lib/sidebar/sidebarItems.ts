@@ -12,12 +12,12 @@ import type { SidebarItem } from './sidebar.types';
 export const sidebarItems: SidebarItem[] = [
   {
     label: 'Dashboard',
-    href: '/',
+    href: '/dashboard',
     icon: LayoutDashboard,
   },
   {
     label: 'Employees',
-    href: '/employees',
+    href: '/',
     icon: Users,
   },
   {

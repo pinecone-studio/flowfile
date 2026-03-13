@@ -1,4 +1,4 @@
-
+import { Search } from 'lucide-react';
 
 const EmployeeSearch = () => {
   return (
@@ -6,15 +6,10 @@ const EmployeeSearch = () => {
       <input
         type="text"
         placeholder="Search employees by name, ID, department, or position..."
-        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-14 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-slate-300"
+        className="h-[36px] w-full rounded-[10px] border border-[#c7cedd] bg-white px-4 pr-12 text-[14px] text-[#111827] outline-none placeholder:text-[#8f96a3]"
       />
 
-      <button
-        type="button"
-        className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg hover:bg-slate-100"
-      >
-        <img src='Vector.svg' alt="search" className="h-4 w-4" />
-      </button>
+      <Search className="pointer-events-none absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#7b8090]" strokeWidth={1.8} />
     </div>
   );
 };

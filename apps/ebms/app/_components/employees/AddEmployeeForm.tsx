@@ -7,13 +7,16 @@ import type {
   AddEmployeeFormData,
   AddEmployeeFormErrors,
 } from '../lib/employee/types';
-import EmployeeFormField from './EmployeeFormField';
+import ContractAndContactSection from './ContractAndContactSection';
+import PersonalInformationSection from './PersonalInformationSection';
+import WorkInformationSection from './WorkInformationSection';
 
 type AddEmployeeFormProps = {
   form: AddEmployeeFormData;
   errors: AddEmployeeFormErrors;
   isSubmitting: boolean;
   onCancel: () => void;
+  onDemo: () => void;
   onChange: (name: AddEmployeeFieldName, value: string) => void;
   onSubmit: () => Promise<void>;
 };
@@ -23,6 +26,7 @@ const AddEmployeeForm = ({
   errors,
   isSubmitting,
   onCancel,
+  onDemo,
   onChange,
   onSubmit,
 }: AddEmployeeFormProps) => {
@@ -36,109 +40,53 @@ const AddEmployeeForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-5 bg-[#dfe3ee] px-4 pb-3 pt-4"
+      className="flex h-full flex-col gap-6 bg-[#dfe4f1] px-6 py-6"
     >
-      <div className="grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2">
-        <EmployeeFormField
-          label="Last Name"
-          name="lastName"
-          value={form.lastName}
-          error={errors.lastName}
-          placeholder=""
+      <div className="flex flex-1 flex-col gap-6">
+        <PersonalInformationSection
+          form={form}
+          errors={errors}
           onChange={onChange}
         />
-        <EmployeeFormField
-          label="First Name"
-          name="firstName"
-          value={form.firstName}
-          error={errors.firstName}
-          placeholder=""
+        <WorkInformationSection
+          form={form}
+          errors={errors}
           onChange={onChange}
         />
-        <EmployeeFormField
-          label="Last Name (English)"
-          name="lastNameEng"
-          value={form.lastNameEng}
-          error={errors.lastNameEng}
-          placeholder=""
-          onChange={onChange}
-        />
-        <EmployeeFormField
-          label="First Name (English)"
-          name="firstNameEng"
-          value={form.firstNameEng}
-          error={errors.firstNameEng}
-          placeholder=""
-          onChange={onChange}
-        />
-        <EmployeeFormField
-          label="Email"
-          name="email"
-          type="email"
-          value={form.email}
-          error={errors.email}
-          placeholder=""
-          onChange={onChange}
-        />
-        <EmployeeFormField
-          label="Employee Code"
-          name="employeeCode"
-          value={form.employeeCode}
-          error={errors.employeeCode}
-          placeholder="EMP-260312-125"
-          onChange={onChange}
-        />
-        <EmployeeFormField
-          label="Department"
-          name="department"
-          value={form.department}
-          error={errors.department}
-          placeholder=""
-          onChange={onChange}
-        />
-        <EmployeeFormField
-          label="Branch"
-          name="branch"
-          value={form.branch}
-          error={errors.branch}
-          placeholder=""
-          onChange={onChange}
-        />
-        <EmployeeFormField
-          label="Level"
-          name="level"
-          value={form.level}
-          error={errors.level}
-          placeholder=""
-          onChange={onChange}
-        />
-        <EmployeeFormField
-          label="Hire Date"
-          name="hireDate"
-          type="date"
-          value={form.hireDate}
-          error={errors.hireDate}
-          placeholder="mm/dd/yyyy"
+        <ContractAndContactSection
+          form={form}
+          errors={errors}
           onChange={onChange}
         />
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-2">
+      <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={onCancel}
-          className="h-10 rounded-[12px] border border-[#c6ccd8] bg-[#e7ebf3] px-5 text-[13px] font-medium text-[#344054] transition hover:bg-[#dde3ee]"
+          className="h-[32px] min-w-[82px] rounded-[4px] border border-[#c4cad6] bg-white px-5 text-[14px] font-medium text-[#6b7280]"
         >
           Cancel
         </button>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="h-10 rounded-[12px] bg-[#0f1b3d] px-5 text-[13px] font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isSubmitting ? 'Creating...' : 'Create Employee'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onDemo}
+            disabled={isSubmitting}
+            className="h-[32px] min-w-[74px] rounded-[4px] border border-[#c4cad6] bg-white px-4 text-[14px] font-medium text-[#111827] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Demo
+          </button>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="h-[32px] min-w-[142px] rounded-[4px] border border-[#c4cad6] bg-white px-5 text-[14px] font-medium text-[#111827] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? 'Creating...' : 'Create Employee'}
+          </button>
+        </div>
       </div>
     </form>
   );

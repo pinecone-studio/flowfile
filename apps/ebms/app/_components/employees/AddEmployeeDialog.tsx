@@ -1,11 +1,17 @@
 'use client';
 
-import { useState } from "react";
-import { AddEmployeeFieldName, AddEmployeeFormData, AddEmployeeFormErrors } from "../lib/employee/types";
-import { createInitialAddEmployeeForm } from "../lib/employee/createInitialAddEmployeeForm";
-import validateAddEmployeeForm from "../lib/employee/validateAddEmployeeForm";
-import AddEmployeeButton from "./addEmployeeButton";
-import AddEmployeeForm from "./AddEmployeeForm";
+import { X } from 'lucide-react';
+import { useState } from 'react';
+import { createDemoAddEmployeeForm } from '../lib/employee/createDemoAddEmployeeForm';
+import { createInitialAddEmployeeForm } from '../lib/employee/createInitialAddEmployeeForm';
+import type {
+  AddEmployeeFieldName,
+  AddEmployeeFormData,
+  AddEmployeeFormErrors,
+} from '../lib/employee/types';
+import validateAddEmployeeForm from '../lib/employee/validateAddEmployeeForm';
+import AddEmployeeForm from './AddEmployeeForm';
+import AddEmployeeButton from './addEmployeeButton';
 
 const createInitialErrors = (): AddEmployeeFormErrors => {
   return {
@@ -13,12 +19,18 @@ const createInitialErrors = (): AddEmployeeFormErrors => {
     lastName: '',
     firstNameEng: '',
     lastNameEng: '',
+    birthMonth: '',
+    birthDay: '',
     email: '',
     employeeCode: '',
     department: '',
     branch: '',
-    level: '',
+    positionTitle: '',
     hireDate: '',
+    annualVacationDays: '',
+    kpiEligible: '',
+    salaryFromCompany: '',
+    status: '',
   };
 };
 
@@ -64,6 +76,11 @@ const AddEmployeeDialog = () => {
     }));
   };
 
+  const handleDemo = (): void => {
+    setForm(createDemoAddEmployeeForm());
+    setErrors(createInitialErrors());
+  };
+
   const handleSubmit = async (): Promise<void> => {
     const nextErrors = validateAddEmployeeForm(form);
 
@@ -87,20 +104,33 @@ const AddEmployeeDialog = () => {
       <AddEmployeeButton onClick={handleOpen} />
 
       {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 px-4 py-8">
-          <div className="w-full max-w-4xl overflow-hidden rounded-md border border-[#cfcfcf] bg-[#e9ebf3] shadow-lg">
-            <div className="flex items-center justify-between border-b border-[#cfcfcf] bg-white px-4 py-2">
-              <h2 className="w-full text-center text-[14px] font-semibold text-[#1f1f1f]">
-                Add Employeeee
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/25 px-4"
+          onClick={handleClose}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-employee-title"
+            className="flex h-[921px] w-[668px] flex-col overflow-hidden rounded-[8px] border border-[#202020] bg-[#dfe4f1] shadow-[0_18px_40px_rgba(15,23,42,0.18)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex h-[44px] items-center justify-between border-b border-[#cfd5e0] bg-white px-6">
+              <div className="w-10" />
+              <h2
+                id="add-employee-title"
+                className="text-[20px] font-semibold text-[#111111]"
+              >
+                Add Employee
               </h2>
 
               <button
                 type="button"
                 aria-label="Close dialog"
                 onClick={handleClose}
-                className="ml-4 text-[18px] leading-none text-[#333333]"
+                className="flex h-8 w-8 items-center justify-center text-[#111111]"
               >
-                ×
+                <X className="h-5 w-5" strokeWidth={1.7} />
               </button>
             </div>
 
@@ -109,6 +139,7 @@ const AddEmployeeDialog = () => {
               errors={errors}
               isSubmitting={isSubmitting}
               onCancel={handleClose}
+              onDemo={handleDemo}
               onChange={handleChange}
               onSubmit={handleSubmit}
             />

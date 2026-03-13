@@ -1,4 +1,3 @@
-import { createEmployeeCode } from './createEmployeeCode';
 import type { AddEmployeeFormData } from './types';
 
 export const createInitialAddEmployeeForm = (): AddEmployeeFormData => {
@@ -7,12 +6,17 @@ export const createInitialAddEmployeeForm = (): AddEmployeeFormData => {
     lastName: '',
     firstNameEng: '',
     lastNameEng: '',
+    birthMonth: '',
+    birthDay: '',
     email: '',
-    employeeCode: createEmployeeCode(),
+    employeeCode: '',
     department: '',
     branch: '',
-    level: '',
+    positionTitle: '',
     hireDate: '',
-    status: 'ACTIVE',
+    annualVacationDays: '',
+    kpiEligible: '',
+    salaryFromCompany: '',
+    status: '',
   };
 };

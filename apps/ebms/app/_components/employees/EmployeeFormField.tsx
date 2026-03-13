@@ -2,41 +2,49 @@
 
 import type { ChangeEvent } from 'react';
 import type { AddEmployeeFieldName } from '../lib/employee/types';
+import EmployeeFieldLabel from './EmployeeFieldLabel';
 
 type EmployeeFormFieldProps = {
-  label: string;
+  label?: string;
   name: AddEmployeeFieldName;
   value: string;
   error?: string;
-  type?: 'text' | 'email' | 'date';
+  type?: 'text' | 'email' | 'number';
   placeholder?: string;
   readOnly?: boolean;
+  required?: boolean;
+  containerClassName?: string;
+  inputClassName?: string;
   onChange: (name: AddEmployeeFieldName, value: string) => void;
 };
 
-const getInputClassName = (error?: string): string => {
-  const baseClassName = [
-    'h-8 w-full rounded-[16px] border bg-[#f8f8f8] px-4 text-[12px]',
-    'text-[#2b2f38] outline-none transition placeholder:text-[#9aa3b2]',
+const getInputClassName = (
+  error?: string,
+  readOnly = false,
+  inputClassName = ''
+): string => {
+  const baseClassName =
+    'h-[32px] w-full rounded-[4px] border bg-white px-3 text-[12px]';
+  const textClassName =
+    'text-[#0f172a] outline-none transition placeholder:text-[#c4c9d2]';
+  const readOnlyClassName = ['', 'bg-[#f3f4f6]'][Number(readOnly)];
+  const stateClassName = error
+    ? 'border-rose-500 focus:border-rose-500'
+    : 'border-[#c7ccd6] focus:border-[#b9c1cf]';
+
+  return [
+    baseClassName,
+    textClassName,
+    readOnlyClassName,
+    stateClassName,
+    inputClassName,
   ].join(' ');
-
-  if (error) {
-    return `${baseClassName} border-rose-500 focus:border-rose-500`;
-  }
-
-  return `${baseClassName} border-[#c7ccd6] focus:border-[#b9c1cf]`;
 };
 
 const renderError = (error?: string) => {
-  if (!error) {
-    return <div className="min-h-[16px]" />;
-  }
-
-  return (
-    <p className="min-h-[16px] text-[11px] leading-4 text-rose-600">
-      {error}
-    </p>
-  );
+  return error ? (
+    <p className="text-[11px] leading-4 text-rose-600">{error}</p>
+  ) : null;
 };
 
 const EmployeeFormField = ({
@@ -44,9 +52,12 @@ const EmployeeFormField = ({
   name,
   value,
   error,
-  type = 'text',
+  type,
   placeholder,
-  readOnly = false,
+  readOnly,
+  required,
+  containerClassName,
+  inputClassName,
   onChange,
 }: EmployeeFormFieldProps) => {
   const handleChange = (
@@ -56,13 +67,8 @@ const EmployeeFormField = ({
   };
 
   return (
-    <div className="flex flex-col gap-1">
-      <label
-        htmlFor={name}
-        className="text-[12px] font-normal leading-5 text-[#4b5565]"
-      >
-        {label}
-      </label>
+    <div className={`flex flex-col gap-1 ${containerClassName ?? ''}`.trim()}>
+      <EmployeeFieldLabel label={label} name={name} required={required} />
 
       <input
         id={name}
@@ -72,7 +78,7 @@ const EmployeeFormField = ({
         readOnly={readOnly}
         placeholder={placeholder}
         onChange={handleChange}
-        className={getInputClassName(error)}
+        className={getInputClassName(error, readOnly, inputClassName ?? '')}
       />
 
       {renderError(error)}
