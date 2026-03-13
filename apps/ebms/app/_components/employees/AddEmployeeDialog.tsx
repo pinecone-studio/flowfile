@@ -7,7 +7,6 @@ import validateAddEmployeeForm from "../lib/employee/validateAddEmployeeForm";
 import AddEmployeeButton from "./addEmployeeButton";
 import AddEmployeeForm from "./AddEmployeeForm";
 
-
 const createInitialErrors = (): AddEmployeeFormErrors => {
   return {
     firstName: '',
