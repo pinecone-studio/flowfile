@@ -2,6 +2,11 @@
   "name": "team4-epas-worker",
   "compatibility_date": "2026-03-10",
   "main": "src/index.ts",
+
+  "vars": {
+    "EPAS_WEBHOOK_URL": "http://127.0.0.1:8787/epas/events",
+  },
+
   "d1_databases": [
     {
       "binding": "DB",
