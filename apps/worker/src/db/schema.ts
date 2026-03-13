@@ -69,3 +69,31 @@ export const auditLog = sqliteTable('audit_log', {
   message: text('message'),
   createdAt: text('created_at').notNull(),
 });
+
+export const employees = sqliteTable('employees', {
+  id: text('id').primaryKey(),
+  entraId: text('entra_id'),
+  firstName: text('first_name').notNull(),
+  lastName: text('last_name').notNull(),
+  firstNameEng: text('first_name_eng'),
+  lastNameEng: text('last_name_eng'),
+  email: text('email'),
+  imageUrl: text('image_url'),
+  hireDate: text('hire_date'),
+  numberOfVacationDays: integer('number_of_vacation_days'),
+  terminationDate: text('termination_date'),
+  status: text('status').notNull(),
+  github: text('github'),
+  department: text('department'),
+  branch: text('branch'),
+  employeeCode: text('employee_code').notNull(),
+  level: text('level'),
+  isKpi: integer('is_kpi', { mode: 'boolean' }).notNull().default(false),
+  isSalaryCompany: integer('is_salary_company', { mode: 'boolean' })
+    .notNull()
+    .default(false),
+  birthDayAndMonth: text('birth_day_and_month'),
+  birthdayPoster: text('birthday_poster'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});

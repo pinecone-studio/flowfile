@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
+import employeeRoutes from './modules/employee/employee.routes';
 
 type Env = {
   Bindings: {
     DB: D1Database;
     DOCS_BUCKET: R2Bucket;
+    EPAS_WEBHOOK_URL?: string;
   };
 };
 
@@ -42,5 +44,20 @@ app.get('/db-tables', async (c) => {
 
   return c.json(result);
 });
+
+//------------------Employee service zoriulsan, endees ehelj bga----------
+
+app.post('/epas/events', async (c) => {
+  const body = await c.req.json();
+
+  console.log('EPAS EVENT:', JSON.stringify(body, null, 2));
+
+  return c.json({
+    received: true,
+    body,
+  });
+});
+
+app.route('/employees', employeeRoutes);
 
 export default app;
