@@ -99,3 +99,22 @@ export class EmployeeService {
     console.log('WEBHOOK RESPONSE BODY:', text);
   }
 }
+
+const employeeService = new EmployeeService();
+
+export const listEmployees = (env: EnvWithBindings) =>
+  employeeService.listEmployees(env);
+
+export const getEmployeeById = (env: EnvWithBindings, id: string) =>
+  employeeService.getEmployeeById(env, id);
+
+export const createEmployee = (
+  env: EnvWithBindings,
+  input: CreateEmployeeInput,
+) => employeeService.createEmployee(env, input);
+
+export const updateEmployee = (
+  env: EnvWithBindings,
+  id: string,
+  input: UpdateEmployeeInput,
+) => employeeService.updateEmployee(env, id, input);
