@@ -53,6 +53,10 @@ export const generatedDocuments = sqliteTable('generated_documents', {
   generationOrder: integer('generation_order').notNull(),
   status: text('status').notNull(),
   createdAt: text('created_at').notNull(),
+  signatureImageUrl: text('signature_image_url'),
+  signMethod: text('sign_method'),
+  signedBy: text('signed_by'),
+  signedAt: text('signed_at'),
 });
 
 export const auditLog = sqliteTable('audit_log', {
@@ -96,4 +100,24 @@ export const employees = sqliteTable('employees', {
   birthdayPoster: text('birthday_poster'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
+});
+
+
+export const templates = sqliteTable('templates', {
+  name: text('name').primaryKey(),
+  htmlContent: text('html_content').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+export const reviewRequests = sqliteTable('review_requests', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull(),
+  reviewerEmail: text('reviewer_email').notNull(),
+  reviewToken: text('review_token').notNull(),
+  status: text('status').notNull(),
+  openedAt: text('opened_at'),
+  approvedAt: text('approved_at'),
+  rejectedAt: text('rejected_at'),
+  createdAt: text('created_at').notNull(),
 });
