@@ -54,3 +54,13 @@ export const createGeneratedDocument = async (
   await db.insert(generatedDocuments).values(data);
   return getGeneratedDocumentById(env, data.id);
 };
+
+export const updateGeneratedDocument = async (
+  env: EnvWithDb,
+  id: string,
+  data: Partial<typeof generatedDocuments.$inferInsert>,
+) => {
+  const db = getDb(env);
+  await db.update(generatedDocuments).set(data).where(eq(generatedDocuments.id, id));
+  return getGeneratedDocumentById(env, id);
+};

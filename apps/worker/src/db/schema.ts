@@ -29,6 +29,8 @@ export const jobs = sqliteTable('jobs', {
   employeeId: text('employee_id').notNull(),
   actionName: text('action_name').notNull(),
   triggerSource: text('trigger_source').notNull(),
+  inputPayloadJson: text('input_payload_json'),
+  requestedByEmail: text('requested_by_email'),
   dryRun: integer('dry_run', { mode: 'boolean' }).notNull().default(false),
   status: text('status').notNull(),
   documentsExpected: integer('documents_expected').notNull().default(0),
@@ -57,6 +59,7 @@ export const generatedDocuments = sqliteTable('generated_documents', {
   signMethod: text('sign_method'),
   signedBy: text('signed_by'),
   signedAt: text('signed_at'),
+  finalizedAt: text('finalized_at'),
 });
 
 export const auditLog = sqliteTable('audit_log', {
@@ -113,11 +116,18 @@ export const templates = sqliteTable('templates', {
 export const reviewRequests = sqliteTable('review_requests', {
   id: text('id').primaryKey(),
   jobId: text('job_id').notNull(),
+  documentId: text('document_id').notNull(),
   reviewerEmail: text('reviewer_email').notNull(),
+  reviewerName: text('reviewer_name'),
+  signerRole: text('signer_role').notNull(),
+  signOrder: integer('sign_order').notNull().default(1),
   reviewToken: text('review_token').notNull(),
   status: text('status').notNull(),
   openedAt: text('opened_at'),
   approvedAt: text('approved_at'),
   rejectedAt: text('rejected_at'),
+  signatureImageUrl: text('signature_image_url'),
+  signMethod: text('sign_method'),
   createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
 });

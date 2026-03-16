@@ -3,6 +3,7 @@ import actionsRoutes from './http/routes/actions.routes';
 import auditRoutes from './http/routes/audit.routes';
 import documentsRoutes from './http/routes/documents.routes';
 import healthRoutes from './http/routes/health.routes';
+import reviewRoutes from './http/routes/review.routes';
 import triggerRoutes from './http/routes/trigger.routes';
 import webhooksRoutes, {
   receiveEmployeeEvent,
@@ -18,6 +19,7 @@ app.route('/api/v1', triggerRoutes);
 app.route('/api/v1', actionsRoutes);
 app.route('/api/v1', documentsRoutes);
 app.route('/api/v1', auditRoutes);
+app.route('/api/v1', reviewRoutes);
 app.route('/webhooks', webhooksRoutes);
 
 app.get('/db-test', async (c) => {
