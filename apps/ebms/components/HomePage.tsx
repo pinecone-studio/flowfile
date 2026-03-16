@@ -1,4 +1,4 @@
-import EmployeePage from './_components/employeesPage/EmployeePage';
+import EmployeePage from '../features/employees/EmployeePage';
 
 const HomePage = () => {
   return <EmployeePage />;

@@ -1,5 +1,4 @@
 import { UsersRound } from 'lucide-react';
-import AddEmployeeDialog from '../employees/AddEmployeeDialog';
 import EmployeeRow from './EmployeeRow';
 import EmployeeSearch from './EmployeeSearch';
 
@@ -66,8 +65,6 @@ const EmployeeTable = () => {
             Employee Management
           </h2>
         </div>
-
-        <AddEmployeeDialog />
       </div>
 
       <div className="mb-3 mt-4">

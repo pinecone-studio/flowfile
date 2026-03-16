@@ -1,15 +1,12 @@
 import Link from 'next/link';
-import { SidebarItem } from '../lib/sidebar/sidebar.types';
+import { SidebarItem } from '../../../lib/sidebar/sidebar.types';
 
 type SidebarNavItemProps = {
   item: SidebarItem;
   isActive: boolean;
 };
 
-export function SidebarNavItem({
-  item,
-  isActive,
-}: SidebarNavItemProps) {
+export function SidebarNavItem({ item, isActive }: SidebarNavItemProps) {
   const Icon = item.icon;
 
   return (

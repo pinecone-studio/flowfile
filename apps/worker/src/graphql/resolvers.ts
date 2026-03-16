@@ -1,13 +1,27 @@
 import {
   listEmployees,
   getEmployeeById,
-  createEmployee,
-  updateEmployee,
 } from '../modules/employee/employee.service';
-import { getAllActions, getAction } from '../modules/action/action.service';
+
+import {
+  getAllActions,
+  getAction,
+  getAllRecipients,
+  getRecipient,
+} from '../modules/action/action.service';
+
 import { getAllJobs, getJob, triggerAction } from '../modules/job/job.service';
+
 import { getGeneratedDocuments } from '../modules/document/document.service';
 import { getAuditLogs } from '../modules/audit/audit.service';
+import {
+  getTemplates,
+  getTemplateByName,
+} from '../modules/templates/templates.service';
+import {
+  getReviewRequestByToken,
+  getReviewRequests,
+} from '../modules/review/review.service';
 
 type GraphQLContext = {
   env: {
@@ -16,72 +30,80 @@ type GraphQLContext = {
   };
 };
 
-export const resolvers = {
-  Query: {
-    employees: async (_parent: unknown, _args: unknown, ctx: GraphQLContext) =>
-      listEmployees(ctx.env),
-
-    employee: async (
-      _parent: unknown,
-      args: { id: string },
-      ctx: GraphQLContext,
-    ) => getEmployeeById(ctx.env, args.id),
-
-    actions: async (_parent: unknown, _args: unknown, ctx: GraphQLContext) =>
-      getAllActions(ctx.env),
-
-    action: async (
-      _parent: unknown,
-      args: { actionName: string },
-      ctx: GraphQLContext,
-    ) => getAction(ctx.env, args.actionName),
-
-    jobs: async (_parent: unknown, _args: unknown, ctx: GraphQLContext) =>
-      getAllJobs(ctx.env),
-
-    job: async (
-      _parent: unknown,
-      args: { id: string },
-      ctx: GraphQLContext,
-    ) => getJob(ctx.env, args.id),
-
-    generatedDocuments: async (
-      _parent: unknown,
-      args: { jobId?: string; employeeId?: string },
-      ctx: GraphQLContext,
-    ) => getGeneratedDocuments(ctx.env, args),
-
-    auditLogs: async (
-      _parent: unknown,
-      args: { employeeId?: string; actionName?: string; jobId?: string },
-      ctx: GraphQLContext,
-    ) => getAuditLogs(ctx.env, args),
+export const root = {
+  employees: async (_args: unknown, context: GraphQLContext) => {
+    return listEmployees(context.env);
   },
 
-  Mutation: {
-    createEmployee: async (
-      _parent: unknown,
-      args: { input: any },
-      ctx: GraphQLContext,
-    ) => createEmployee(ctx.env, args.input),
+  employee: async (args: { id: string }, context: GraphQLContext) => {
+    return getEmployeeById(context.env, args.id);
+  },
 
-    updateEmployee: async (
-      _parent: unknown,
-      args: { id: string; input: any },
-      ctx: GraphQLContext,
-    ) => updateEmployee(ctx.env, args.id, args.input),
+  actions: async (_args: unknown, context: GraphQLContext) => {
+    return getAllActions(context.env);
+  },
 
-    triggerAction: async (
-      _parent: unknown,
-      args: {
-        input: {
-          employeeId: string;
-          actionName: string;
-          triggerSource: string;
-          dryRun?: boolean;
-        };
-      },
-      ctx: GraphQLContext,
-    ) => triggerAction(ctx.env, args.input),
+  action: async (args: { actionName: string }, context: GraphQLContext) => {
+    return getAction(context.env, args.actionName);
+  },
+
+  recipients: async (_args: unknown, context: GraphQLContext) => {
+    return getAllRecipients(context.env);
+  },
+
+  recipient: async (args: { id: string }, context: GraphQLContext) => {
+    return getRecipient(context.env, args.id);
+  },
+
+  jobs: async (_args: unknown, context: GraphQLContext) => {
+    return getAllJobs(context.env);
+  },
+
+  job: async (args: { id: string }, context: GraphQLContext) => {
+    return getJob(context.env, args.id);
+  },
+
+  generatedDocuments: async (
+    args: { jobId?: string; employeeId?: string },
+    context: GraphQLContext,
+  ) => {
+    return getGeneratedDocuments(context.env, args);
+  },
+
+  auditLogs: async (
+    args: { employeeId?: string; actionName?: string; jobId?: string },
+    context: GraphQLContext,
+  ) => {
+    return getAuditLogs(context.env, args);
+  },
+
+  templates: async (_args: unknown, context: GraphQLContext) => {
+    return getTemplates(context.env);
+  },
+
+  template: async (args: { name: string }, context: GraphQLContext) => {
+    return getTemplateByName(context.env, args.name);
+  },
+
+  reviewRequests: async (args: { jobId?: string }, context: GraphQLContext) => {
+    return getReviewRequests(context.env, args);
+  },
+
+  reviewRequest: async (args: { token: string }, context: GraphQLContext) => {
+    return getReviewRequestByToken(context.env, args.token);
+  },
+
+  triggerAction: async (
+    args: {
+      input: {
+        employeeId: string;
+        actionName: string;
+        triggerSource: string;
+        dryRun?: boolean;
+      };
+    },
+    context: GraphQLContext,
+  ) => {
+    return triggerAction(context.env, args.input);
   },
 };
