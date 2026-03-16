@@ -57,6 +57,30 @@ type GeneratedDocument {
   generationOrder: Int!
   status: String!
   createdAt: String!
+
+  signatureImageUrl: String
+  signMethod: String
+  signedBy: String
+  signedAt: String
+}
+
+type Template {
+  name: String!
+  htmlContent: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type ReviewRequest {
+  id: String!
+  jobId: String!
+  reviewerEmail: String!
+  reviewToken: String!
+  status: String!
+  openedAt: String
+  approvedAt: String
+  rejectedAt: String
+  createdAt: String!
 }
 
 type AuditLog {
@@ -107,24 +131,31 @@ type Employee {
     dryRun: Boolean = false
   }
 
-  type Query {
-    employees: [Employee!]!
-    employee(id: String!): Employee
+ type Query {
+  employees: [Employee!]!
+  employee(id: String!): Employee
 
-    actions: [ActionRegistry!]!
-    action(actionName: String!): ActionRegistry
+  actions: [ActionRegistry!]!
+  action(actionName: String!): ActionRegistry
 
-    recipients: [Recipient!]!
-    recipient(id: String!): Recipient
+  recipients: [Recipient!]!
+  recipient(id: String!): Recipient
 
-    jobs: [Job!]!
-    job(id: String!): Job
+  jobs: [Job!]!
+  job(id: String!): Job
 
-    generatedDocuments(jobId: String, employeeId: String): [GeneratedDocument!]!
-    auditLogs(employeeId: String, actionName: String, jobId: String): [AuditLog!]!
-  }
+  generatedDocuments(jobId: String, employeeId: String): [GeneratedDocument!]!
+  auditLogs(employeeId: String, actionName: String, jobId: String): [AuditLog!]!
 
-  type Mutation {
-    triggerAction(input: TriggerActionInput!): Job!
-  }
+  templates: [Template!]!
+  template(name: String!): Template
+
+  reviewRequests(jobId: String): [ReviewRequest!]!
+  reviewRequest(token: String!): ReviewRequest
+}
+type Mutation {
+  triggerAction(input: TriggerActionInput!): Job!
+
+  createReviewRequest(jobId: String!, reviewerEmail: String!): ReviewRequest!
+}
 `);

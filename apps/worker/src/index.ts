@@ -1,19 +1,24 @@
 import { Hono } from 'hono';
+import actionsRoutes from './http/routes/actions.routes';
+import auditRoutes from './http/routes/audit.routes';
+import documentsRoutes from './http/routes/documents.routes';
+import healthRoutes from './http/routes/health.routes';
+import triggerRoutes from './http/routes/trigger.routes';
+import webhooksRoutes, {
+  receiveEmployeeEvent,
+} from './http/routes/webhooks.routes';
+import type { AppEnv } from './http/types';
 import employeeRoutes from './modules/employee/employee.routes';
 
-type Env = {
-  Bindings: {
-    DB: D1Database;
-    DOCS_BUCKET: R2Bucket;
-    EPAS_WEBHOOK_URL?: string;
-  };
-};
+const app = new Hono<AppEnv>();
 
-const app = new Hono<Env>();
-
-app.get('/health', (c) => {
-  return c.json({ status: 'ok' });
-});
+app.route('', healthRoutes);
+app.route('/api/v1', healthRoutes);
+app.route('/api/v1', triggerRoutes);
+app.route('/api/v1', actionsRoutes);
+app.route('/api/v1', documentsRoutes);
+app.route('/api/v1', auditRoutes);
+app.route('/webhooks', webhooksRoutes);
 
 app.get('/db-test', async (c) => {
   const result = await c.env.DB.prepare('SELECT 1 as ok').first();
@@ -47,16 +52,7 @@ app.get('/db-tables', async (c) => {
 
 //------------------Employee service zoriulsan, endees ehelj bga----------
 
-app.post('/epas/events', async (c) => {
-  const body = await c.req.json();
-
-  console.log('EPAS EVENT:', JSON.stringify(body, null, 2));
-
-  return c.json({
-    received: true,
-    body,
-  });
-});
+app.post('/epas/events', receiveEmployeeEvent);
 
 app.route('/employees', employeeRoutes);
 
