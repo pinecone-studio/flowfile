@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import './global.css';
-import { AppHeader } from './_components/header/AppHeader';
-import { Sidebar } from './_components/sidebar/Sidebar';
+import { AppHeader } from '../features/header/AppHeader';
+import { Sidebar } from '../features/sidebar/Sidebar';
 
 type RootLayoutProps = {
   children: ReactNode;

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { ChevronsUpDown, SunMedium } from 'lucide-react';
-import { BrandLogo } from './BrandLogo';
+import { BrandLogo } from './components/BrandLogo';
 
 export function AppHeader() {
   return (

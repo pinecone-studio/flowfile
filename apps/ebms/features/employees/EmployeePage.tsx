@@ -1,6 +1,7 @@
-import DocumentPanel from './DocumentPanel';
-import EmployeeStats from './EmployeeStats';
-import EmployeeTable from './EmployeeTable';
+
+import DocumentPanel from './components/DocumentPanel';
+import EmployeeStats from './components/EmployeeStats';
+import EmployeeTable from './components/EmployeeTable';
 
 const EmployeePage = () => {
   return (

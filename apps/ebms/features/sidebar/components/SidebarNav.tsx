@@ -1,8 +1,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { isSidebarItemActive } from '../lib/sidebar/isSidebarItemActive';
-import { sidebarItems } from '../lib/sidebar/sidebarItems';
+import { isSidebarItemActive } from '../../../lib/sidebar/isSidebarItemActive';
+import { sidebarItems } from '../../../lib/sidebar/sidebarItems';
 import { SidebarNavItem } from './SidebarNavItems';
 
 export function SidebarNav() {

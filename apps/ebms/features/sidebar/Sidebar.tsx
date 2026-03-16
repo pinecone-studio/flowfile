@@ -1,4 +1,4 @@
-import { SidebarNav } from './SidebarNav';
+import { SidebarNav } from './components/SidebarNav';
 
 export function Sidebar() {
   return (
