@@ -1,7 +1,4 @@
-import {
-  EmployeeDoc, // Document биш EmployeeDoc болгож өөрчлөв
-  DocumentQuery,
-} from '../types/document.types';
+import { EmployeeDoc, DocumentQuery } from '../types/document.types';
 
 const mockDocuments: EmployeeDoc[] = [
   {
@@ -33,31 +30,28 @@ const mockDocuments: EmployeeDoc[] = [
 export const getDocuments = async (
   query: DocumentQuery,
 ): Promise<EmployeeDoc[]> => {
-  let data = [...mockDocuments];
+  const { search, status, employeeId, sort } = query;
 
-  // Search filter
-  if (query.search) {
-    const value = query.search.toLowerCase();
-    data = data.filter((doc) => doc.title.toLowerCase().includes(value));
-  }
+  // Complexity-г хамгийн бага байлгахын тулд Array.every ашиглав
+  const filtered = mockDocuments.filter((doc) => {
+    const checks = [
+      !search || doc.title.toLowerCase().includes(search.toLowerCase()),
+      !status || doc.status === status,
+      !employeeId || doc.employeeId === employeeId,
+    ];
+    return checks.every(Boolean);
+  });
 
-  // Status & Employee filter (Complexity багасгах үүднээс нэгтгэж болно)
-  if (query.status) {
-    data = data.filter((doc) => doc.status === query.status);
-  }
+  return sortData(filtered, sort);
+};
 
-  if (query.employeeId) {
-    data = data.filter((doc) => doc.employeeId === query.employeeId);
-  }
+// Sort логикийг тусад нь салгаснаар үндсэн функцийн complexity багасна
+const sortData = (data: EmployeeDoc[], sortOrder?: 'asc' | 'desc') => {
+  if (!sortOrder) return data;
 
-  // Sort logic (ESLint complexity: 4-т тааруулан авсаархан болгов)
-  if (query.sort) {
-    data.sort((a, b) => {
-      const timeA = new Date(a.createdAt).getTime();
-      const timeB = new Date(b.createdAt).getTime();
-      return query.sort === 'asc' ? timeA - timeB : timeB - timeA;
-    });
-  }
-
-  return data;
+  return [...data].sort((a, b) => {
+    const aT = new Date(a.createdAt).getTime();
+    const bT = new Date(b.createdAt).getTime();
+    return sortOrder === 'asc' ? aT - bT : bT - aT;
+  });
 };
