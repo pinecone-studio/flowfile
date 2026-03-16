@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { getDb } from '../../db/client';
 import { reviewRequests } from '../../db/schema';
 
@@ -6,18 +6,24 @@ type EnvWithDb = { DB: D1Database };
 
 export const listReviewRequests = async (
   env: EnvWithDb,
-  filters?: { jobId?: string },
+  filters?: { jobId?: string; documentId?: string },
 ) => {
   const db = getDb(env);
+  const conditions = [];
 
   if (filters?.jobId) {
-    return db
-      .select()
-      .from(reviewRequests)
-      .where(eq(reviewRequests.jobId, filters.jobId));
+    conditions.push(eq(reviewRequests.jobId, filters.jobId));
   }
 
-  return db.select().from(reviewRequests);
+  if (filters?.documentId) {
+    conditions.push(eq(reviewRequests.documentId, filters.documentId));
+  }
+
+  if (conditions.length === 0) {
+    return db.select().from(reviewRequests);
+  }
+
+  return db.select().from(reviewRequests).where(and(...conditions));
 };
 
 export const getReviewRequestByToken = async (

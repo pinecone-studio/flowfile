@@ -55,17 +55,58 @@ export const parseTriggerFields = (action: Pick<ActionRecord, 'triggerFieldsJson
   return safeParseJson<string[]>(action.triggerFieldsJson, []);
 };
 
-export type ActionDocumentConfig = {
+type RawActionDocumentConfig = {
+  id?: string;
+  template?: string;
+  order?: number;
   documentType?: string;
   templateName?: string;
   fileName?: string;
   storagePath?: string;
+  generationOrder?: number;
+};
+
+export type ActionDocumentConfig = {
+  documentType: string;
+  templateName: string;
+  fileName: string;
+  storagePath?: string;
+  generationOrder: number;
 };
 
 export const parseDocuments = (action: Pick<ActionRecord, 'documentsJson'>) => {
-  return safeParseJson<ActionDocumentConfig[]>(action.documentsJson, []);
+  const documents = safeParseJson<RawActionDocumentConfig[]>(
+    action.documentsJson,
+    [],
+  );
+
+  return documents.map((document, index) => {
+    const documentType = document.documentType ?? document.id ?? `document_${index + 1}`;
+    const templateName =
+      document.templateName ?? document.template ?? `${documentType}.html`;
+    const fileName =
+      document.fileName ??
+      templateName.replace(/\.(docx|pdf)$/i, '.html');
+
+    return {
+      documentType,
+      templateName,
+      fileName,
+      storagePath: document.storagePath,
+      generationOrder: document.generationOrder ?? document.order ?? index + 1,
+    };
+  });
 };
 
 export const parseRecipients = (action: Pick<ActionRecord, 'recipientsJson'>) => {
-  return safeParseJson<unknown[]>(action.recipientsJson, []);
+  const recipientsJson = safeParseJson<Array<string | { roleKey?: string }>>(
+    action.recipientsJson,
+    [],
+  );
+
+  return recipientsJson
+    .map((recipient) =>
+      typeof recipient === 'string' ? recipient : recipient.roleKey ?? '',
+    )
+    .filter(Boolean);
 };
