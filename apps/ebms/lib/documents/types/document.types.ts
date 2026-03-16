@@ -1,15 +1,12 @@
-export type DocumentStatus =
-  | 'completed'
-  | 'pending'
-  | 'failed';
-  
-export interface Document {
+export type DocumentStatus = 'completed' | 'pending' | 'failed';
+
+export interface EmployeeDoc {
   id: string;
   title: string;
   status: DocumentStatus;
   employeeName: string;
   employeeId: string;
-  createdAt: string; // Энд үсгийн алдаа байгаа эсэхийг нягтлаарай (createdAtts?)
+  createdAt: string;
 }
 
 export interface DocumentQuery {
