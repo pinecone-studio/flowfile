@@ -1,5 +1,5 @@
-import HomePage from '../components/HomePage';
+import EmployeePage from '../features/employees/EmployeePage';
 
 export default function Index() {
-  return <HomePage />;
+  return <EmployeePage />;
 }
