@@ -4,7 +4,14 @@
   "main": "src/index.ts",
 
   "vars": {
+    "APP_BASE_URL": "http://127.0.0.1:8787",
     "EPAS_WEBHOOK_URL": "http://127.0.0.1:8787/epas/events",
+    // Optional email delivery settings:
+    // "EMAIL_WEBHOOK_URL": "https://your-email-service.example/send",
+    // "MAIL_FROM_EMAIL": "noreply@example.com",
+    // "MAIL_FROM_NAME": "EPAS",
+    // "MAIL_REPLY_TO": "hr@example.com",
+    // "MAILCHANNELS_API_URL": "https://api.mailchannels.net/tx/v1/send",
   },
 
   "d1_databases": [
