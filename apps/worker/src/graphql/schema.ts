@@ -1,16 +1,14 @@
-import { buildSchema } from 'graphql';
+import { createSchema } from 'graphql-yoga';
+import { resolvers } from './resolvers';
 
-export const schema = buildSchema(`
-
-
-
+export const typeDefs = /* GraphQL */ `
 type ActionRegistry {
   actionName: String!
   phase: String!
-  triggerFieldsJson: JSON!
+  triggerFieldsJson: String!
   triggerCondition: String
-  documentsJson: JSON!
-  recipientsJson: JSON!
+  documentsJson: String!
+  recipientsJson: String!
   isActive: Boolean!
   createdAt: String!
   updatedAt: String!
@@ -33,6 +31,8 @@ type Job {
   employeeId: String!
   actionName: String!
   triggerSource: String!
+  inputPayloadJson: String
+  requestedByEmail: String
   dryRun: Boolean!
   status: String!
   documentsExpected: Int!
@@ -57,11 +57,11 @@ type GeneratedDocument {
   generationOrder: Int!
   status: String!
   createdAt: String!
-
   signatureImageUrl: String
   signMethod: String
   signedBy: String
   signedAt: String
+  finalizedAt: String
 }
 
 type Template {
@@ -74,13 +74,20 @@ type Template {
 type ReviewRequest {
   id: String!
   jobId: String!
+  documentId: String!
   reviewerEmail: String!
+  reviewerName: String
+  signerRole: String!
+  signOrder: Int!
   reviewToken: String!
   status: String!
   openedAt: String
   approvedAt: String
   rejectedAt: String
+  signatureImageUrl: String
+  signMethod: String
   createdAt: String!
+  updatedAt: String!
 }
 
 type AuditLog {
@@ -89,10 +96,10 @@ type AuditLog {
   employeeId: String!
   actionName: String!
   eventType: String!
-  eventPayloadJson: JSON
-  changedFieldsJson: JSON
-  documentsJson: JSON
-  recipientsJson: JSON
+  eventPayloadJson: String
+  changedFieldsJson: String
+  documentsJson: String
+  recipientsJson: String
   status: String!
   message: String
   createdAt: String!
@@ -124,14 +131,16 @@ type Employee {
   updatedAt: String!
 }
 
- input TriggerActionInput {
-    employeeId: String!
-    actionName: String!
-    triggerSource: String!
-    dryRun: Boolean = false
-  }
+input TriggerActionInput {
+  employeeId: String!
+  actionName: String!
+  triggerSource: String!
+  dryRun: Boolean = false
+  actionPayloadJson: String
+  requestedByEmail: String
+}
 
- type Query {
+type Query {
   employees: [Employee!]!
   employee(id: String!): Employee
 
@@ -150,12 +159,23 @@ type Employee {
   templates: [Template!]!
   template(name: String!): Template
 
-  reviewRequests(jobId: String): [ReviewRequest!]!
+  reviewRequests(jobId: String, documentId: String): [ReviewRequest!]!
   reviewRequest(token: String!): ReviewRequest
 }
+
 type Mutation {
   triggerAction(input: TriggerActionInput!): Job!
-
-  createReviewRequest(jobId: String!, reviewerEmail: String!): ReviewRequest!
+  approveReviewRequest(
+    token: String!
+    reviewerName: String
+    signatureImageUrl: String
+    signMethod: String
+  ): ReviewRequest!
+  rejectReviewRequest(token: String!, reviewerName: String): ReviewRequest!
 }
-`);
+`;
+
+export const graphqlSchema = createSchema({
+  typeDefs,
+  resolvers,
+});

@@ -15,6 +15,18 @@ type ActionRecord = {
   recipientsJson: string;
 };
 
+const actionAliases: Record<string, string> = {
+  salary_increase: 'promote_employee',
+  promote_employee: 'salary_increase',
+};
+
+const resolveActionLookupCandidates = (actionName: string) => {
+  const normalized = actionName.trim();
+  const aliasTarget = actionAliases[normalized];
+
+  return aliasTarget ? [normalized, aliasTarget] : [normalized];
+};
+
 function safeParseJson<T>(value: string | null | undefined, fallback: T): T {
   if (!value) return fallback;
 
@@ -30,17 +42,27 @@ export const getAllActions = async (env: EnvWithDb) => {
 };
 
 export const getAction = async (env: EnvWithDb, actionName: string) => {
-  return getActionByName(env, actionName);
+  for (const candidate of resolveActionLookupCandidates(actionName)) {
+    const action = await getActionByName(env, candidate);
+
+    if (action) {
+      return action;
+    }
+  }
+
+  return null;
 };
 
 export const getActiveAction = async (env: EnvWithDb, actionName: string) => {
-  const action = await repoGetActiveActionByName(env, actionName);
+  for (const candidate of resolveActionLookupCandidates(actionName)) {
+    const action = await repoGetActiveActionByName(env, candidate);
 
-  if (!action) {
-    throw new Error(`Active action not found: ${actionName}`);
+    if (action) {
+      return action;
+    }
   }
 
-  return action;
+  throw new Error(`Active action not found: ${actionName}`);
 };
 
 export const getAllRecipients = async (env: EnvWithDb) => {

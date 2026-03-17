@@ -1,0 +1,124 @@
+query GetActions {
+  actions {
+    actionName
+    phase
+    triggerFieldsJson
+    documentsJson
+    recipientsJson
+    isActive
+  }
+}
+
+query GetJobs {
+  jobs {
+    id
+    employeeId
+    actionName
+    status
+    triggerSource
+    documentsExpected
+    documentsGenerated
+    createdAt
+    updatedAt
+  }
+}
+
+query GetGeneratedDocuments($employeeId: String!, $jobId: String) {
+  generatedDocuments(employeeId: $employeeId, jobId: $jobId) {
+    id
+    jobId
+    employeeId
+    actionName
+    documentType
+    templateName
+    fileName
+    fileUrl
+    status
+    signedBy
+    signedAt
+    finalizedAt
+  }
+}
+
+query GetReviewRequest($token: String!) {
+  reviewRequest(token: $token) {
+    id
+    jobId
+    documentId
+    reviewerEmail
+    reviewerName
+    signerRole
+    signOrder
+    reviewToken
+    status
+    openedAt
+    approvedAt
+    rejectedAt
+  }
+}
+
+mutation TriggerAction($input: TriggerActionInput!) {
+  triggerAction(input: $input) {
+    id
+    employeeId
+    actionName
+    triggerSource
+    inputPayloadJson
+    requestedByEmail
+    dryRun
+    status
+    documentsExpected
+    documentsGenerated
+    errorMessage
+    startedAt
+    completedAt
+    createdAt
+    updatedAt
+  }
+}
+
+mutation ApproveReviewRequest(
+  $token: String!
+  $reviewerName: String
+  $signatureImageUrl: String
+  $signMethod: String
+) {
+  approveReviewRequest(
+    token: $token
+    reviewerName: $reviewerName
+    signatureImageUrl: $signatureImageUrl
+    signMethod: $signMethod
+  ) {
+    id
+    jobId
+    documentId
+    reviewerEmail
+    reviewerName
+    signerRole
+    signOrder
+    status
+    openedAt
+    approvedAt
+    rejectedAt
+    signatureImageUrl
+    signMethod
+    updatedAt
+  }
+}
+
+mutation RejectReviewRequest($token: String!, $reviewerName: String) {
+  rejectReviewRequest(token: $token, reviewerName: $reviewerName) {
+    id
+    jobId
+    documentId
+    reviewerEmail
+    reviewerName
+    signerRole
+    signOrder
+    status
+    openedAt
+    approvedAt
+    rejectedAt
+    updatedAt
+  }
+}
