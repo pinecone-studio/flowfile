@@ -8,6 +8,10 @@ module.exports = {
       __dirname,
       '{src,pages,components,app,features,lib}/**/*.{ts,tsx,js,jsx,html,mdx}'
     ),
+    join(
+      __dirname,
+      '../../libs/shadcn/src/components/ui/{button,input,separator,sheet,sidebar,skeleton}.tsx'
+    ),
   ],
   theme: {
     extend: {
@@ -49,6 +53,18 @@ module.exports = {
         card: {
           DEFAULT: 'hsl(var(--card) / <alpha-value>)',
           foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
+        },
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar-background) / <alpha-value>)',
+          foreground: 'hsl(var(--sidebar-foreground) / <alpha-value>)',
+          primary: 'hsl(var(--sidebar-primary) / <alpha-value>)',
+          'primary-foreground':
+            'hsl(var(--sidebar-primary-foreground) / <alpha-value>)',
+          accent: 'hsl(var(--sidebar-accent) / <alpha-value>)',
+          'accent-foreground':
+            'hsl(var(--sidebar-accent-foreground) / <alpha-value>)',
+          border: 'hsl(var(--sidebar-border) / <alpha-value>)',
+          ring: 'hsl(var(--sidebar-ring) / <alpha-value>)',
         },
       },
     },

@@ -17,7 +17,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@team-4/shadcn": ["../../libs/shadcn/src/index.ts"]
     },
     "types": ["node", "react", "react-dom"],
     "outDir": "dist",
