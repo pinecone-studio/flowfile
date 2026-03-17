@@ -14,11 +14,13 @@ import {
 import { createReviewRequest, getReviewRequests } from '../review/review.service';
 import { getTemplateByName } from '../templates/templates.service';
 import {
+  buildDocumentsGeneratedNotifications,
   buildDocumentFileUrl,
   buildReviewNotifications,
   buildWorkflowDocumentHtml,
   emitWorkflowNotifications,
   parseWorkflowPayload,
+  resolveGeneratedDocumentRecipients,
   resolveWorkflowRecipients,
   type WorkflowRecipientInput,
 } from '../workflow/workflow.service';
@@ -32,6 +34,12 @@ import {
 type EnvWithBindings = {
   DB: D1Database;
   DOCS_BUCKET?: R2Bucket;
+  APP_BASE_URL?: string;
+  EMAIL_WEBHOOK_URL?: string;
+  MAILCHANNELS_API_URL?: string;
+  MAIL_FROM_EMAIL?: string;
+  MAIL_FROM_NAME?: string;
+  MAIL_REPLY_TO?: string;
   EPAS_WEBHOOK_URL?: string;
 };
 
@@ -225,6 +233,12 @@ export const triggerAction = async (
       documentsGenerated: createdDocuments.length,
       updatedAt: nowIso(),
     });
+    const generatedDocumentRecipients = await resolveGeneratedDocumentRecipients(
+      env,
+      employee,
+      actionPayload,
+      input.requestedByEmail,
+    );
 
     await logEvent(env, {
       jobId: job.id,
@@ -232,7 +246,7 @@ export const triggerAction = async (
       actionName: action.actionName,
       eventType: 'documents_generated',
       documents: createdDocuments,
-      recipients: workflowRecipients,
+      recipients: generatedDocumentRecipients,
       status: 'success',
       message: `${createdDocuments.length} documents generated`,
     });
@@ -252,12 +266,22 @@ export const triggerAction = async (
       message: `${createdReviewRequests.length} review requests created`,
     });
 
+    const documentNotifications = buildDocumentsGeneratedNotifications({
+      job: activeJob ?? job,
+      employee,
+      documents: createdDocuments,
+      recipients: generatedDocumentRecipients,
+      baseUrl: env.APP_BASE_URL,
+    });
+    await emitWorkflowNotifications(env, documentNotifications);
+
     const notifications = buildReviewNotifications({
       job: activeJob ?? job,
       documents: createdDocuments,
       reviewRequests: createdReviewRequests,
+      baseUrl: env.APP_BASE_URL,
     });
-    emitWorkflowNotifications(notifications);
+    await emitWorkflowNotifications(env, notifications);
 
     return activeJob;
   } catch (error) {

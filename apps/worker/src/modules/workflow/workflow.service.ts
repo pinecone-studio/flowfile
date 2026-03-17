@@ -1,6 +1,14 @@
 import { getAllRecipients } from '../action/action.service';
 
-type EnvWithDb = { DB: D1Database };
+type EnvWithDb = {
+  DB: D1Database;
+  APP_BASE_URL?: string;
+  EMAIL_WEBHOOK_URL?: string;
+  MAILCHANNELS_API_URL?: string;
+  MAIL_FROM_EMAIL?: string;
+  MAIL_FROM_NAME?: string;
+  MAIL_REPLY_TO?: string;
+};
 
 type EmployeeLike = {
   id: string;
@@ -50,6 +58,15 @@ type JobLike = {
   actionName: string;
 };
 
+type WorkflowNotification = {
+  type: 'review_request' | 'documents_generated' | 'workflow_completed';
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  metadata?: Record<string, unknown>;
+};
+
 const payloadEmailByRole: Record<string, string[]> = {
   department_chief: ['departmentChiefEmail', 'approverEmail', 'higherEmployeeEmail'],
   branch_manager: ['branchManagerEmail', 'approverEmail', 'higherEmployeeEmail'],
@@ -68,9 +85,22 @@ const genericApproverFields = [
   'ceoEmail',
 ];
 
+const generatedNotificationRecipientSpecs = [
+  {
+    role: 'clo',
+    payloadKeys: ['cloEmail', 'legalEmail', 'chiefLegalOfficerEmail'],
+    recipientRoleKeys: ['clo', 'chief_legal_officer', 'legal'],
+  },
+  {
+    role: 'hr_management',
+    payloadKeys: ['hrManagementEmail', 'hrEmail'],
+    recipientRoleKeys: ['hr_management', 'hr_team'],
+  },
+] as const;
+
 function getPayloadString(
   payload: WorkflowPayload,
-  keys: string[],
+  keys: readonly string[],
 ): string | null {
   for (const key of keys) {
     const value = payload[key];
@@ -90,6 +120,20 @@ function pushUniqueRecipient(
     (current) =>
       current.email.toLowerCase() === recipient.email.toLowerCase() &&
       current.role === recipient.role,
+  );
+
+  if (!alreadyExists) {
+    recipients.push(recipient);
+  }
+}
+
+function pushUniqueEmailRecipient(
+  recipients: WorkflowRecipient[],
+  recipient: WorkflowRecipient,
+) {
+  const alreadyExists = recipients.some(
+    (current) =>
+      current.email.toLowerCase() === recipient.email.toLowerCase(),
   );
 
   if (!alreadyExists) {
@@ -118,6 +162,101 @@ function buildRecipientFromRecord(
     role: record.roleKey,
     signOrder,
   };
+}
+
+function normalizeBaseUrl(baseUrl?: string) {
+  return baseUrl?.trim().replace(/\/+$/, '') ?? '';
+}
+
+function buildAbsoluteUrl(baseUrl: string | undefined, path: string | null) {
+  if (!path) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
+  if (!normalizedBaseUrl) {
+    return path;
+  }
+
+  return new URL(path, `${normalizedBaseUrl}/`).toString();
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function titleCaseRole(role: string) {
+  return role
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function renderNotificationHtml(input: {
+  title: string;
+  intro: string;
+  paragraphs: string[];
+  links?: Array<{ label: string; url: string | null }>;
+}) {
+  const links = input.links ?? [];
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>${escapeHtml(input.title)}</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 24px; color: #17202a; }
+      h1 { margin-bottom: 12px; }
+      p { line-height: 1.5; }
+      ul { padding-left: 20px; }
+      a { color: #0f5fff; }
+    </style>
+  </head>
+  <body>
+    <h1>${escapeHtml(input.title)}</h1>
+    <p>${escapeHtml(input.intro)}</p>
+    ${input.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('')}
+    ${
+      links.length > 0
+        ? `<ul>${links
+            .map((link) => {
+              if (!link.url) {
+                return `<li>${escapeHtml(link.label)}</li>`;
+              }
+
+              return `<li><a href="${escapeHtml(link.url)}">${escapeHtml(link.label)}</a></li>`;
+            })
+            .join('')}</ul>`
+        : ''
+    }
+  </body>
+</html>`;
+}
+
+function renderNotificationText(input: {
+  intro: string;
+  paragraphs: string[];
+  links?: Array<{ label: string; url: string | null }>;
+}) {
+  const lines = [input.intro, ...input.paragraphs];
+
+  for (const link of input.links ?? []) {
+    lines.push(link.url ? `${link.label}: ${link.url}` : link.label);
+  }
+
+  return lines.join('\n\n');
 }
 
 export const parseWorkflowPayload = (value: unknown): WorkflowPayload => {
@@ -207,6 +346,64 @@ export const resolveWorkflowRecipients = async (
       email: requestedByEmail,
       name: null,
       role: 'hr_requester',
+      signOrder: recipients.length + 1,
+    });
+  }
+
+  return recipients;
+};
+
+export const resolveGeneratedDocumentRecipients = async (
+  env: EnvWithDb,
+  employee: EmployeeLike,
+  payload: WorkflowPayload,
+  requestedByEmail?: string,
+) => {
+  const recipients: WorkflowRecipient[] = [];
+  const availableRecipients = await getAllRecipients(env);
+
+  for (const spec of generatedNotificationRecipientSpecs) {
+    const payloadEmail = getPayloadString(payload, spec.payloadKeys);
+    const fallbackRequestedByEmail =
+      spec.role === 'hr_management' && requestedByEmail?.trim()
+        ? requestedByEmail.trim()
+        : null;
+    const recipientEmail = payloadEmail ?? fallbackRequestedByEmail;
+
+    if (recipientEmail) {
+      pushUniqueEmailRecipient(recipients, {
+        email: recipientEmail,
+        name: null,
+        role: spec.role,
+        signOrder: recipients.length + 1,
+      });
+      continue;
+    }
+
+    const match = availableRecipients.find(
+      (recipient) =>
+        recipient.isActive &&
+        (spec.recipientRoleKeys as readonly string[]).includes(recipient.roleKey) &&
+        matchesEmployeeScope(recipient, employee),
+    );
+
+    if (match) {
+      pushUniqueEmailRecipient(recipients, {
+        email: match.recipientEmail,
+        name: match.recipientName ?? null,
+        role: spec.role,
+        signOrder: recipients.length + 1,
+      });
+    }
+  }
+
+  const employeeEmail = employee.email ?? getPayloadString(payload, ['employeeEmail']);
+
+  if (employeeEmail) {
+    pushUniqueEmailRecipient(recipients, {
+      email: employeeEmail,
+      name: `${employee.firstName} ${employee.lastName}`.trim(),
+      role: 'employee',
       signOrder: recipients.length + 1,
     });
   }
@@ -310,24 +507,101 @@ export const buildReviewNotifications = (input: {
   job: JobLike;
   documents: DocumentLike[];
   reviewRequests: ReviewRequestLike[];
+  baseUrl?: string;
 }) => {
   const documentsById = new Map(
     input.documents.map((document) => [document.id, document]),
   );
 
-  return input.reviewRequests.map((reviewRequest) => {
+  return input.reviewRequests.map<WorkflowNotification>((reviewRequest) => {
     const document = documentsById.get(reviewRequest.documentId);
+    const reviewUrl = buildAbsoluteUrl(
+      input.baseUrl,
+      buildReviewUrl(reviewRequest.reviewToken),
+    );
+    const intro = `${reviewRequest.reviewerName ?? reviewRequest.reviewerEmail}, please review and sign ${
+      document?.fileName ?? 'the requested document'
+    }.`;
+    const paragraphs = [
+      `Workflow: ${input.job.actionName}`,
+      `Document: ${document?.documentType ?? 'Generated document'}`,
+      `Role: ${titleCaseRole(reviewRequest.signerRole)}`,
+    ];
 
     return {
       type: 'review_request',
       to: reviewRequest.reviewerEmail,
       subject: `EPAS signature requested: ${document?.documentType ?? input.job.actionName}`,
-      reviewUrl: buildReviewUrl(reviewRequest.reviewToken),
-      documentId: reviewRequest.documentId,
-      jobId: input.job.id,
-      message: `${reviewRequest.reviewerName ?? reviewRequest.reviewerEmail}, please review and sign ${
-        document?.fileName ?? 'the requested document'
-      }.`,
+      text: renderNotificationText({
+        intro,
+        paragraphs,
+        links: reviewUrl ? [{ label: 'Open review request', url: reviewUrl }] : [],
+      }),
+      html: renderNotificationHtml({
+        title: 'Signature Requested',
+        intro,
+        paragraphs,
+        links: reviewUrl ? [{ label: 'Open review request', url: reviewUrl }] : [],
+      }),
+      metadata: {
+        reviewUrl,
+        documentId: reviewRequest.documentId,
+        jobId: input.job.id,
+      },
+    };
+  });
+};
+
+export const buildDocumentsGeneratedNotifications = (input: {
+  job: JobLike;
+  employee: EmployeeLike;
+  documents: Array<DocumentLike & { fileUrl: string | null }>;
+  recipients: WorkflowRecipient[];
+  baseUrl?: string;
+}) => {
+  return input.recipients.map<WorkflowNotification>((recipient) => {
+    const employeeName =
+      `${input.employee.firstName} ${input.employee.lastName}`.trim();
+    const intro = `${
+      recipient.name ?? recipient.email
+    }, documents for ${employeeName} have been generated for the ${
+      input.job.actionName
+    } workflow.`;
+    const paragraphs = [
+      `Employee: ${employeeName}`,
+      `Recipient role: ${titleCaseRole(recipient.role)}`,
+      `Generated documents: ${input.documents.length}`,
+    ];
+    const links = input.documents.map((document) => ({
+      label: `${document.documentType}`,
+      url: buildAbsoluteUrl(input.baseUrl, document.fileUrl),
+    }));
+
+    return {
+      type: 'documents_generated',
+      to: recipient.email,
+      subject: `EPAS documents generated: ${input.job.actionName}`,
+      text: renderNotificationText({
+        intro,
+        paragraphs,
+        links,
+      }),
+      html: renderNotificationHtml({
+        title: 'Documents Generated',
+        intro,
+        paragraphs,
+        links,
+      }),
+      metadata: {
+        jobId: input.job.id,
+        employeeId: input.employee.id,
+        role: recipient.role,
+        documents: input.documents.map((document) => ({
+          documentId: document.id,
+          documentType: document.documentType,
+          fileUrl: buildAbsoluteUrl(input.baseUrl, document.fileUrl),
+        })),
+      },
     };
   });
 };
@@ -336,23 +610,153 @@ export const buildCompletionNotifications = (input: {
   job: JobLike;
   documents: Array<DocumentLike & { fileUrl: string | null }>;
   recipients: WorkflowRecipient[];
+  baseUrl?: string;
 }) => {
-  return input.recipients.map((recipient) => ({
-    type: 'workflow_completed',
-    to: recipient.email,
-    subject: `EPAS completed: ${input.job.actionName}`,
-    jobId: input.job.id,
-    documents: input.documents.map((document) => ({
-      documentId: document.id,
-      documentType: document.documentType,
-      fileUrl: document.fileUrl,
-    })),
-    message: `${recipient.name ?? recipient.email}, the ${input.job.actionName} workflow has completed.`,
-  }));
+  return input.recipients.map<WorkflowNotification>((recipient) => {
+    const intro = `${
+      recipient.name ?? recipient.email
+    }, the ${input.job.actionName} workflow has completed.`;
+    const links = input.documents.map((document) => ({
+      label: `${document.documentType}`,
+      url: buildAbsoluteUrl(input.baseUrl, document.fileUrl),
+    }));
+
+    return {
+      type: 'workflow_completed',
+      to: recipient.email,
+      subject: `EPAS completed: ${input.job.actionName}`,
+      text: renderNotificationText({
+        intro,
+        paragraphs: [
+          `Completed documents: ${input.documents.length}`,
+          `Recipient role: ${titleCaseRole(recipient.role)}`,
+        ],
+        links,
+      }),
+      html: renderNotificationHtml({
+        title: 'Workflow Completed',
+        intro,
+        paragraphs: [
+          `Completed documents: ${input.documents.length}`,
+          `Recipient role: ${titleCaseRole(recipient.role)}`,
+        ],
+        links,
+      }),
+      metadata: {
+        jobId: input.job.id,
+        documents: input.documents.map((document) => ({
+          documentId: document.id,
+          documentType: document.documentType,
+          fileUrl: buildAbsoluteUrl(input.baseUrl, document.fileUrl),
+        })),
+      },
+    };
+  });
 };
 
-export const emitWorkflowNotifications = (notifications: unknown[]) => {
+async function sendNotificationViaWebhook(
+  env: EnvWithDb,
+  notification: WorkflowNotification,
+) {
+  if (!env.EMAIL_WEBHOOK_URL?.trim()) {
+    return false;
+  }
+
+  const response = await fetch(env.EMAIL_WEBHOOK_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(notification),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Email webhook failed with status ${response.status}`);
+  }
+
+  return true;
+}
+
+async function sendNotificationViaMailChannels(
+  env: EnvWithDb,
+  notification: WorkflowNotification,
+) {
+  if (!env.MAIL_FROM_EMAIL?.trim()) {
+    return false;
+  }
+
+  const response = await fetch(
+    env.MAILCHANNELS_API_URL?.trim() || 'https://api.mailchannels.net/tx/v1/send',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [
+          {
+            to: [{ email: notification.to }],
+          },
+        ],
+        from: {
+          email: env.MAIL_FROM_EMAIL,
+          name: env.MAIL_FROM_NAME?.trim() || 'EPAS',
+        },
+        reply_to: env.MAIL_REPLY_TO?.trim()
+          ? {
+              email: env.MAIL_REPLY_TO.trim(),
+            }
+          : undefined,
+        subject: notification.subject,
+        content: [
+          {
+            type: 'text/plain',
+            value: notification.text,
+          },
+          {
+            type: 'text/html',
+            value: notification.html,
+          },
+        ],
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`MailChannels failed with status ${response.status}`);
+  }
+
+  return true;
+}
+
+export const emitWorkflowNotifications = async (
+  env: EnvWithDb,
+  notifications: WorkflowNotification[],
+) => {
   for (const notification of notifications) {
-    console.log('WORKFLOW_NOTIFICATION', JSON.stringify(notification));
+    try {
+      const sentWithWebhook = await sendNotificationViaWebhook(env, notification);
+
+      if (!sentWithWebhook) {
+        const sentWithMailChannels = await sendNotificationViaMailChannels(
+          env,
+          notification,
+        );
+
+        if (!sentWithMailChannels) {
+          console.log('WORKFLOW_NOTIFICATION', JSON.stringify(notification));
+        }
+      }
+    } catch (error) {
+      console.error(
+        'WORKFLOW_NOTIFICATION_FAILED',
+        JSON.stringify({
+          to: notification.to,
+          type: notification.type,
+          message: error instanceof Error ? error.message : 'Unknown notification error',
+        }),
+      );
+      console.log('WORKFLOW_NOTIFICATION', JSON.stringify(notification));
+    }
   }
 };

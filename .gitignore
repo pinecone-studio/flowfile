@@ -30,6 +30,7 @@ node_modules
 /coverage
 /libpeerconnection.log
 npm-debug.log
+*.tsbuildinfo
 yarn-error.log
 testem.log
 /typings
@@ -40,6 +41,7 @@ Thumbs.db
 
 .nx/cache
 .nx/workspace-data
+apps/worker/.wrangler
 
 # Next.js
 .next

@@ -5,7 +5,9 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "outDir": "../../out-tsc/apps/worker",
     "strict": true,
+    "tsBuildInfoFile": "../../out-tsc/apps/worker/tsconfig.tsbuildinfo",
     "types": ["@cloudflare/workers-types", "node"]
   },
   "include": ["src"]

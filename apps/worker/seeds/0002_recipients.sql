@@ -21,6 +21,28 @@ INSERT OR REPLACE INTO recipients (
   datetime('now')
 ),
 (
+  'recipient-hr-management',
+  'hr_management',
+  'HR Management',
+  'hr.management@demo.epas.local',
+  NULL,
+  NULL,
+  1,
+  datetime('now'),
+  datetime('now')
+),
+(
+  'recipient-clo',
+  'clo',
+  'Chief Legal Officer',
+  'clo@demo.epas.local',
+  NULL,
+  NULL,
+  1,
+  datetime('now'),
+  datetime('now')
+),
+(
   'recipient-department-chief',
   'department_chief',
   'Department Chief',
