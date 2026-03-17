@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { yoga } from './graphql/server';
 import actionsRoutes from './http/routes/actions.routes';
 import auditRoutes from './http/routes/audit.routes';
 import documentsRoutes from './http/routes/documents.routes';
@@ -14,6 +15,11 @@ import employeeRoutes from './modules/employee/employee.routes';
 const app = new Hono<AppEnv>();
 
 app.route('', healthRoutes);
+app.all('/graphql', async (c) => {
+  return yoga.fetch(c.req.raw, {
+    env: c.env,
+  });
+});
 app.route('/api/v1', healthRoutes);
 app.route('/api/v1', triggerRoutes);
 app.route('/api/v1', actionsRoutes);

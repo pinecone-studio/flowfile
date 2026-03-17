@@ -1,4 +1,7 @@
-INSERT INTO action_registry (
+DELETE FROM action_registry
+WHERE action_name = 'promote_employee';
+
+INSERT OR REPLACE INTO action_registry (
   action_name,
   phase,
   trigger_fields_json,
@@ -26,7 +29,7 @@ INSERT INTO action_registry (
   datetime('now')
 ),
 (
-  'promote_employee',
+  'salary_increase',
   'working',
   '["level","numberOfVacationDays","isSalaryCompany"]',
   NULL,
