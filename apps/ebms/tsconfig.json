@@ -18,8 +18,9 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@team-4/shadcn": ["libs/shadcn/src/index.ts"],
-      "@team-4/shadcn/server": ["libs/shadcn/src/server.ts"]
+      "@team-4/shadcn": ["../../libs/shadcn/src/index.ts"],
+      "@team-4/shadcn/server": ["../../libs/shadcn/src/server.ts"],
+      "@team-4/shadcn/*": ["../../libs/shadcn/src/*"] 
     },
     "types": ["node", "react", "react-dom"],
     "outDir": "dist",
