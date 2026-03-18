@@ -11,15 +11,20 @@ import {
   sidebarFooterItems,
   sidebarSections,
 } from '../../../lib/sidebar/sidebarItems';
+import type { SidebarTone } from '../sidebarTheme';
 import { SidebarNavItem } from './SidebarNavItems';
 
 type SidebarNavProps = {
-  tone: 'light' | 'dark';
+  tone: SidebarTone;
+};
+
+const separatorToneClasses: Record<SidebarTone, string> = {
+  light: 'bg-[#d7dee8]',
+  dark: 'bg-[#262626]',
 };
 
 export function SidebarNav({ tone }: SidebarNavProps) {
   const pathname = usePathname();
-  const isDark = tone === 'dark';
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -28,10 +33,7 @@ export function SidebarNav({ tone }: SidebarNavProps) {
           <SidebarGroup key={section.key} className="p-0">
             {index > 0 ? (
               <SidebarSeparator
-                className={[
-                  'mx-[10px] mb-[18px]',
-                  isDark ? 'bg-[#262626]' : 'bg-[#d7dee8]',
-                ].join(' ')}
+                className={['mx-[10px] mb-[18px]', separatorToneClasses[tone]].join(' ')}
               />
             ) : null}
 
