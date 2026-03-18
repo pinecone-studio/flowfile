@@ -18,11 +18,12 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@team-4/shadcn": ["../../libs/shadcn/src/index.ts"]
+      "@team-4/shadcn": ["libs/shadcn/src/index.ts"],
+      "@team-4/shadcn/server": ["libs/shadcn/src/server.ts"]
     },
     "types": ["node", "react", "react-dom"],
     "outDir": "dist",
-    "rootDir": "."
+    "rootDir": "../.."
   },
   "include": [
     "app/**/*.ts",
@@ -41,6 +42,8 @@
     "lib/**/*.tsx",
     "lib/**/*.js",
     "lib/**/*.jsx",
+    "../../libs/shadcn/src/**/*.ts",
+    "../../libs/shadcn/src/**/*.tsx",
     "../../apps/ebms/.next/types/**/*.ts",
     "../../dist/apps/ebms/.next/types/**/*.ts",
     "next-env.d.ts"
