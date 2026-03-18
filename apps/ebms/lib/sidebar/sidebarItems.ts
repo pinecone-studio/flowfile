@@ -23,10 +23,6 @@ const primarySidebarItems: SidebarItem[] = [
     label: 'Documents',
     href: '/documents',
     icon: FileText,
-<<<<<<< HEAD
-    badge: '6',
-=======
->>>>>>> d828d3c (ui: hide scrollbar in DocumentPanel)
   },
   {
     label: 'Departments',
