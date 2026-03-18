@@ -2,7 +2,7 @@ import { activityStatusStyles } from './dashboardData';
 import type { ActivityRow } from './dashboard.types';
 import { DashboardCard } from './DashboardCard';
 
-type DashboardTableProps = {
+export type DashboardTableProps = {
   title: string;
   rows: ActivityRow[];
 };
@@ -17,7 +17,6 @@ export function DashboardTable({ title, rows }: DashboardTableProps) {
           <span>Time</span>
           <span>Status</span>
         </div>
-
         <div className="pt-[6px]">
           {rows.map((row) => (
             <div

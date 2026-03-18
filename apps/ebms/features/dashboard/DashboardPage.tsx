@@ -6,6 +6,7 @@ import {
 import { DashboardCard } from './components/DashboardCard';
 import { DashboardStatCard } from './components/DashboardStatCard';
 import { DashboardTable } from './components/DashboardTable';
+import { DocumentTable } from './components/DocumentTable';
 
 function DashboardPage() {
   return (
@@ -13,9 +14,8 @@ function DashboardPage() {
       <div className="mx-auto flex max-w-[1540px] flex-col gap-[52px]">
         <div className="grid gap-[44px] xl:grid-cols-[minmax(0,1fr)_268px]">
           <DashboardCard title="Document Pipeline" className="min-h-[586px]">
-            <div className="mt-[16px] flex-1 border-t border-[#e5e9f0]" />
+            <DocumentTable />
           </DashboardCard>
-
           <div className="grid gap-[44px] sm:grid-cols-2 xl:grid-cols-1">
             {dashboardStats.map((stat) => (
               <DashboardStatCard
@@ -26,7 +26,6 @@ function DashboardPage() {
             ))}
           </div>
         </div>
-
         <div className="grid gap-[48px] xl:grid-cols-2">
           <DashboardTable
             title="Recent Documents Generated"
