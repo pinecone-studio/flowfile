@@ -1,59 +1,20 @@
 import {
-  BarChart3,
-  Building2,
+  LayoutDashboard,
   FileText,
-  LayoutGrid,
   Settings,
   Users,
+  Briefcase,
+  Calendar,
+  ClipboardCheck,
 } from 'lucide-react';
-import type { SidebarItem, SidebarSection } from './sidebar.types';
+import { SidebarItem } from './sidebar.types';
 
-const primarySidebarItems: SidebarItem[] = [
-  {
-    label: 'Dashboard',
-    href: '/dashboard',
-    icon: LayoutGrid,
-  },
-  {
-    label: 'Employees',
-    href: '/',
-    icon: Users,
-  },
-  {
-    label: 'Documents',
-    href: '/documents',
-    icon: FileText,
-    badge: '6',
-  },
-  {
-    label: 'Departments',
-    href: '/departments',
-    icon: Building2,
-  },
+export const sidebarItems: SidebarItem[] = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Documents', href: '/documents', icon: FileText },
+  { label: 'Employees', href: '/employees', icon: Users },
+  { label: 'Jobs', href: '/jobs', icon: Briefcase },
+  { label: 'Schedule', href: '/schedule', icon: Calendar },
+  { label: 'Approvals', href: '/approvals', icon: ClipboardCheck },
+  { label: 'Settings', href: '/settings', icon: Settings },
 ];
-
-const utilitySidebarItems: SidebarItem[] = [
-  {
-    label: 'Reports',
-    href: '/reports',
-    icon: BarChart3,
-  },
-  {
-    label: 'Settings',
-    href: '/sign',
-    icon: Settings,
-  },
-];
-
-export const sidebarSections: SidebarSection[] = [
-  {
-    key: 'primary',
-    items: primarySidebarItems,
-  },
-  {
-    key: 'utility',
-    items: utilitySidebarItems,
-  },
-];
-
-export const sidebarFooterItems = utilitySidebarItems;

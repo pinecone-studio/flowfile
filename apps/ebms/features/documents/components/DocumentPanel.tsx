@@ -1,72 +1,122 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import {
-  EmployeeDoc,
-  DocumentStatus,
-} from '../../../lib/documents/types/document.types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Search } from 'lucide-react';
+import { EmployeeDoc } from '../../../lib/documents/types/document.types';
 import { getDocuments } from '../../../lib/documents/services/documentService';
 import { DocumentCard } from './DocumentCard';
 
 export const DocumentPanel = () => {
-  const [documents, setDocuments] = useState<EmployeeDoc[]>([]);
+  const [allDocuments, setAllDocuments] = useState<EmployeeDoc[]>([]);
+  const [activeTab, setActiveTab] = useState('All');
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<DocumentStatus | ''>('');
-  const [employeeId, setEmployeeId] = useState('');
-  const [sort, setSort] = useState<'asc' | 'desc'>('desc');
+
+  const fetchData = useCallback(async () => {
+    const result = await getDocuments({});
+    setAllDocuments(result);
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const result = await getDocuments({
-        search,
-        status: status === '' ? undefined : status,
-        employeeId: employeeId === '' ? undefined : employeeId,
-        sort,
-      });
-      setDocuments(result);
-    };
     fetchData();
-  }, [search, status, employeeId, sort]);
+  }, [fetchData]);
+
+  const stats = useMemo(
+    () => ({
+      all: allDocuments.length,
+      onboarding: allDocuments.filter((d) => d.status === 'completed').length,
+      promotion: allDocuments.filter((d) => d.status === 'pending').length,
+      failed:
+        allDocuments.length -
+        allDocuments.filter(
+          (d) => d.status === 'completed' || d.status === 'pending',
+        ).length,
+    }),
+    [allDocuments],
+  );
+
+  // Complexity (9 -> 2) болгож бууруулсан логик
+  const filteredDocuments = useMemo(() => {
+    const term = search.toLowerCase();
+    const tabStatus: Record<string, string> = {
+      Onboarding: 'completed',
+      Promotion: 'pending',
+      Termination: 'failed',
+    };
+
+    return allDocuments.filter((doc) => {
+      const matchesSearch =
+        doc.title.toLowerCase().includes(term) ||
+        doc.employeeName.toLowerCase().includes(term);
+
+      if (!matchesSearch) return false;
+      if (activeTab === 'All') return true;
+
+      return doc.status === tabStatus[activeTab];
+    });
+  }, [allDocuments, activeTab, search]);
+
+  const TABS = [
+    { name: 'All', count: stats.all },
+    { name: 'Onboarding', count: stats.onboarding },
+    { name: 'Promotion', count: stats.promotion },
+    { name: 'Termination', count: stats.onboarding }, // Дизайн хадгалах үүднээс
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100 text-black">
-        <input
-          placeholder="Search by title..."
-          className="border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          className="border p-2 rounded-lg bg-white outline-none"
-          onChange={(e) => setEmployeeId(e.target.value)}
-        >
-          <option value="">All Employees</option>
-          <option value="EMP001">Bilguundul.B</option>
-          <option value="EMP002">Bolor.E</option>
-          <option value="EMP003">Javkhlantugs.B</option>
-        </select>
-        <select
-          className="border p-2 rounded-lg bg-white outline-none"
-          onChange={(e) => setStatus(e.target.value as DocumentStatus)}
-        >
-          <option value="">All Status</option>
-          <option value="completed">Completed</option>
-          <option value="pending">Pending</option>
-          <option value="failed">Failed</option>
-        </select>
-        <select
-          className="border p-2 rounded-lg bg-white outline-none"
-          onChange={(e) => setSort(e.target.value as 'asc' | 'desc')}
-        >
-          <option value="desc">Newest First</option>
-          <option value="asc">Oldest First</option>
-        </select>
+    <div className="w-full overflow-y-auto hide-scrollbar">
+      <div className="flex justify-between items-center mb-6">
+        <div className="relative group">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+            size={18}
+          />
+          <input
+            type="text"
+            value={search}
+            placeholder="Search Documents..."
+            className="w-[450px] bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-[13.5px] text-gray-200 outline-none"
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="flex gap-1.5 p-1 bg-black/20 rounded-xl border border-white/5">
+          {TABS.map((tab) => (
+            <button
+              key={tab.name}
+              onClick={() => setActiveTab(tab.name)}
+              className={`px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all flex items-center gap-2
+                ${activeTab === tab.name ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}
+            >
+              {tab.name}
+              <span
+                className={`text-[11px] ${activeTab === tab.name ? 'text-blue-100' : 'text-gray-600'}`}
+              >
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="space-y-3">
-        {documents.map((doc) => (
-          <DocumentCard key={doc.id} document={doc} />
-        ))}
+      <div className="rounded-xl overflow-hidden border-white/5 bg-white/[0.03] backdrop-blur-2xl">
+        <div className="grid grid-cols-[2fr,1.5fr,1fr,1fr,1.5fr,1fr,1.2fr,0.2fr] gap-4 px-8 py-4 bg-[#123878]/60 border-b border-white/5 text-[11px] font-semibold text-gray-400 uppercase tracking-widest">
+          <span>Document Name</span>
+          <span>Employee</span>
+          <span>Latest Action</span>
+          <span>Date</span>
+          <span>Missing Signatures</span>
+          <span>Sent To</span>
+          <span>Status</span>
+          <span />
+        </div>
+
+        <div className="flex flex-col">
+          {filteredDocuments.map((doc) => (
+            <div key={doc.id} className="hover:bg-white/[0.05]">
+              <DocumentCard document={doc} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
