@@ -42,7 +42,7 @@ export const sidebarItems: SidebarItem[] = [
   },
   {
     label: 'Settings',
-    href: '/settings',
+    href: '/sign',
     icon: Settings,
   },
 ];
