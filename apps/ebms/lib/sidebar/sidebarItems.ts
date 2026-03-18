@@ -1,19 +1,18 @@
 import {
   BarChart3,
   Building2,
-  Calendar,
   FileText,
-  LayoutDashboard,
+  LayoutGrid,
   Settings,
   Users,
 } from 'lucide-react';
-import type { SidebarItem } from './sidebar.types';
+import type { SidebarItem, SidebarSection } from './sidebar.types';
 
-export const sidebarItems: SidebarItem[] = [
+const primarySidebarItems: SidebarItem[] = [
   {
     label: 'Dashboard',
     href: '/dashboard',
-    icon: LayoutDashboard,
+    icon: LayoutGrid,
   },
   {
     label: 'Employees',
@@ -21,24 +20,23 @@ export const sidebarItems: SidebarItem[] = [
     icon: Users,
   },
   {
+    label: 'Documents',
+    href: '/documents',
+    icon: FileText,
+    badge: '6',
+  },
+  {
     label: 'Departments',
     href: '/departments',
     icon: Building2,
   },
+];
+
+const utilitySidebarItems: SidebarItem[] = [
   {
     label: 'Reports',
     href: '/reports',
     icon: BarChart3,
-  },
-  {
-    label: 'Documents',
-    href: '/documents',
-    icon: FileText,
-  },
-  {
-    label: 'Calendar',
-    href: '/calendar',
-    icon: Calendar,
   },
   {
     label: 'Settings',
@@ -46,3 +44,16 @@ export const sidebarItems: SidebarItem[] = [
     icon: Settings,
   },
 ];
+
+export const sidebarSections: SidebarSection[] = [
+  {
+    key: 'primary',
+    items: primarySidebarItems,
+  },
+  {
+    key: 'utility',
+    items: utilitySidebarItems,
+  },
+];
+
+export const sidebarFooterItems = utilitySidebarItems;

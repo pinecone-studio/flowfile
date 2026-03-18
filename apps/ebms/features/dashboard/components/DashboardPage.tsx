@@ -1,10 +1,44 @@
-import { DocumentPanel } from '../../documents/components/DocumentPanel';
+import {
+  dashboardStats,
+  recentDocuments,
+  recentLifecycleEvents,
+} from './dashboardData';
+import { DashboardCard } from './DashboardCard';
+import { DashboardStatCard } from './DashboardStatCard';
+import { DashboardTable } from './DashboardTable';
 
 function DashboardPage() {
   return (
-    <div>
-      <DocumentPanel />
-    </div>
+    <section className="min-h-full bg-[#f7f8fb] px-[28px] py-[30px] md:px-[36px] md:py-[28px]">
+      <div className="mx-auto flex max-w-[1540px] flex-col gap-[52px]">
+        <div className="grid gap-[44px] xl:grid-cols-[minmax(0,1fr)_268px]">
+          <DashboardCard title="Document Pipeline" className="min-h-[586px]">
+            <div className="mt-[16px] flex-1 border-t border-[#e5e9f0]" />
+          </DashboardCard>
+
+          <div className="grid gap-[44px] sm:grid-cols-2 xl:grid-cols-1">
+            {dashboardStats.map((stat) => (
+              <DashboardStatCard
+                key={stat.label}
+                label={stat.label}
+                value={stat.value}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-[48px] xl:grid-cols-2">
+          <DashboardTable
+            title="Recent Documents Generated"
+            rows={recentDocuments}
+          />
+          <DashboardTable
+            title="Recent Lifecycle Events"
+            rows={recentLifecycleEvents}
+          />
+        </div>
+      </div>
+    </section>
   );
 }
 
