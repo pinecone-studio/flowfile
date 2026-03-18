@@ -1,17 +1,17 @@
-// 'use client';
 'use client';
-import { usePathname } from 'next/navigation';
-import { isSidebarItemActive } from '../../../lib/sidebar/isSidebarItemActive';
-import { sidebarItems } from '../../../lib/sidebar/sidebarItems';
-import { SidebarNavItems } from './SidebarNavItems';
 
+import { usePathname } from "next/navigation";
+import { SidebarNavItems } from "./SidebarNavItems";
+import { isSidebarItemActive } from "@/apps/ebms/lib/sidebar/isSidebarItemActive";
+import { sidebarItems } from "../../../lib/sidebar/sidebarItems"; // Энийг нэмэв
+import { SidebarItem } from "../../../lib/sidebar/sidebar.types"; // Энийг нэмэв
 
 export function SidebarNav({ isCollapsed }: { isCollapsed: boolean }) {
   const pathname = usePathname();
 
   return (
     <nav className="flex flex-col gap-1 py-4">
-      {sidebarItems.map((item) => (
+      {sidebarItems.map((item: SidebarItem) => ( // item: SidebarItem гэж төрлийг нь заав
         <SidebarNavItems
           key={item.href}
           item={item}
@@ -22,20 +22,3 @@ export function SidebarNav({ isCollapsed }: { isCollapsed: boolean }) {
     </nav>
   );
 }
-
-
-// export function SidebarNav() {
-//   const pathname = usePathname();
-
-//   return (
-//     <nav className="flex flex-col gap-[2px] px-0 py-4">
-//       {sidebarItems.map((item) => (
-//         <SidebarNavItem
-//           key={item.href}
-//           item={item}
-//           isActive={isSidebarItemActive(pathname, item.href)}
-//         />
-//       ))}
-//     </nav>
-//   );
-// }

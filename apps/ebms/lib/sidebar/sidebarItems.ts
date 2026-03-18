@@ -1,23 +1,20 @@
 import {
-  BarChart3,
-  Building2,
+  LayoutDashboard,
   FileText,
-  LayoutGrid,
   Settings,
   Users,
+  Briefcase,
+  Calendar,
+  ClipboardCheck,
 } from 'lucide-react';
-import type { SidebarItem, SidebarSection } from './sidebar.types';
+import { SidebarItem } from './sidebar.types';
 
-const primarySidebarItems: SidebarItem[] = [
+// Sidebar-д харагдах цэснүүдийн жагсаалт
+export const sidebarItems: SidebarItem[] = [
   {
     label: 'Dashboard',
     href: '/dashboard',
-    icon: LayoutGrid,
-  },
-  {
-    label: 'Employees',
-    href: '/',
-    icon: Users,
+    icon: LayoutDashboard,
   },
   {
     label: 'Documents',
@@ -25,34 +22,28 @@ const primarySidebarItems: SidebarItem[] = [
     icon: FileText,
   },
   {
-    label: 'Departments',
-    href: '/departments',
-    icon: Building2,
+    label: 'Employees',
+    href: '/employees',
+    icon: Users,
   },
-];
-
-const utilitySidebarItems: SidebarItem[] = [
   {
-    label: 'Reports',
-    href: '/reports',
-    icon: BarChart3,
+    label: 'Jobs',
+    href: '/jobs',
+    icon: Briefcase,
+  },
+  {
+    label: 'Schedule',
+    href: '/schedule',
+    icon: Calendar,
+  },
+  {
+    label: 'Approvals',
+    href: '/approvals',
+    icon: ClipboardCheck,
   },
   {
     label: 'Settings',
-    href: '/sign',
+    href: '/settings',
     icon: Settings,
   },
 ];
-
-export const sidebarSections: SidebarSection[] = [
-  {
-    key: 'primary',
-    items: primarySidebarItems,
-  },
-  {
-    key: 'utility',
-    items: utilitySidebarItems,
-  },
-];
-
-export const sidebarFooterItems = utilitySidebarItems;
