@@ -6,9 +6,6 @@ export const sidebarPanelClasses: Record<SidebarTone, string> = {
 };
 
 export function getSidebarTone(pathname: string): SidebarTone {
-  if (pathname === '/documents' || pathname.startsWith('/documents/')) {
-    return 'dark';
-  }
-
+  void pathname;
   return 'light';
 }

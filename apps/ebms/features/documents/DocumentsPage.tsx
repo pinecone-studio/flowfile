@@ -1,4 +1,4 @@
-import { DocumentPipelineTable } from './DocumentPipelineTable';
+import { DocumentPipelineTable } from './components/DocumentPipelineTable';
 
 export default function DocumentsPage() {
   return (
