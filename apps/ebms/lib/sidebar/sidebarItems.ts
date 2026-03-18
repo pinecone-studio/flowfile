@@ -9,41 +9,12 @@ import {
 } from 'lucide-react';
 import { SidebarItem } from './sidebar.types';
 
-// Sidebar-д харагдах цэснүүдийн жагсаалт
 export const sidebarItems: SidebarItem[] = [
-  {
-    label: 'Dashboard',
-    href: '/dashboard',
-    icon: LayoutDashboard,
-  },
-  {
-    label: 'Documents',
-    href: '/documents',
-    icon: FileText,
-  },
-  {
-    label: 'Employees',
-    href: '/employees',
-    icon: Users,
-  },
-  {
-    label: 'Jobs',
-    href: '/jobs',
-    icon: Briefcase,
-  },
-  {
-    label: 'Schedule',
-    href: '/schedule',
-    icon: Calendar,
-  },
-  {
-    label: 'Approvals',
-    href: '/approvals',
-    icon: ClipboardCheck,
-  },
-  {
-    label: 'Settings',
-    href: '/settings',
-    icon: Settings,
-  },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Documents', href: '/documents', icon: FileText },
+  { label: 'Employees', href: '/employees', icon: Users },
+  { label: 'Jobs', href: '/jobs', icon: Briefcase },
+  { label: 'Schedule', href: '/schedule', icon: Calendar },
+  { label: 'Approvals', href: '/approvals', icon: ClipboardCheck },
+  { label: 'Settings', href: '/settings', icon: Settings },
 ];
