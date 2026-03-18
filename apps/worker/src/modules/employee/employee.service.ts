@@ -22,6 +22,15 @@ export class EmployeeService {
   }
 
   async createEmployee(env: EnvWithBindings, input: CreateEmployeeInput) {
+    const existing = await this.repository.getByEmployeeCode(
+      env,
+      input.employeeCode,
+    );
+
+    if (existing) {
+      throw new Error('Employee code already exists');
+    }
+
     const now = new Date().toISOString();
 
     const employee = await this.repository.create(env, {

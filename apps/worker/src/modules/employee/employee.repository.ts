@@ -44,4 +44,15 @@ export class EmployeeRepository {
     await db.update(employees).set(data).where(eq(employees.id, id));
     return this.getById(env, id);
   }
+
+  async getByEmployeeCode(env: { DB: D1Database }, employeeCode: string) {
+    const db = getDb(env);
+    const result = await db
+      .select()
+      .from(employees)
+      .where(eq(employees.employeeCode, employeeCode))
+      .limit(1);
+
+    return result[0] ?? null;
+  }
 }

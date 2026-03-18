@@ -35,6 +35,29 @@ employeeRoutes.post('/', async (c) => {
   return c.json(employee, 201);
 });
 
+employeeRoutes.post('/', async (c) => {
+  try {
+    const body = await c.req.json();
+
+    const validationError = validateCreateEmployeeInput(body);
+    if (validationError) {
+      return c.json({ message: validationError }, 400);
+    }
+
+    const employee = await employeeService.createEmployee(c.env, body);
+    return c.json(employee, 201);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    if (message.includes('Employee code already exists')) {
+      return c.json({ message }, 409);
+    }
+
+    console.error('CREATE EMPLOYEE ERROR:', error);
+    return c.json({ message: 'Failed to create employee' }, 500);
+  }
+});
+
 employeeRoutes.patch('/:id', async (c) => {
   const id = c.req.param('id');
   const body = await c.req.json();
@@ -47,5 +70,35 @@ employeeRoutes.patch('/:id', async (c) => {
 
   return c.json(employee);
 });
+
+employeeRoutes.patch('/:id', async (c) => {
+  try {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+
+    if (!body || Object.keys(body).length === 0) {
+      return c.json({ message: 'No fields provided for update' }, 400);
+    }
+
+    const employee = await employeeService.updateEmployee(c.env, id, body);
+
+    if (!employee) {
+      return c.json({ message: 'Employee not found' }, 404);
+    }
+
+    return c.json(employee);
+  } catch (error) {
+    console.error('UPDATE EMPLOYEE ERROR:', error);
+    return c.json({ message: 'Failed to update employee' }, 500);
+  }
+});
+
+function validateCreateEmployeeInput(body: any) {
+  if (!body.firstName) return 'firstName is required';
+  if (!body.lastName) return 'lastName is required';
+  if (!body.status) return 'status is required';
+  if (!body.employeeCode) return 'employeeCode is required';
+  return null;
+}
 
 export default employeeRoutes;
