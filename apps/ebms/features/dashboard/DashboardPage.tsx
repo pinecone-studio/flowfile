@@ -2,10 +2,10 @@ import {
   dashboardStats,
   recentDocuments,
   recentLifecycleEvents,
-} from './dashboardData';
-import { DashboardCard } from './DashboardCard';
-import { DashboardStatCard } from './DashboardStatCard';
-import { DashboardTable } from './DashboardTable';
+} from './components/dashboardData';
+import { DashboardCard } from './components/DashboardCard';
+import { DashboardStatCard } from './components/DashboardStatCard';
+import { DashboardTable } from './components/DashboardTable';
 
 function DashboardPage() {
   return (

@@ -6,7 +6,7 @@ import {
   SidebarHeader,
 } from '@team-4/shadcn';
 import { usePathname } from 'next/navigation';
-import { getSidebarTone, sidebarPanelClasses } from './sidebarTheme';
+import { getSidebarTone, sidebarPanelClasses } from './components/sidebarTheme';
 import { SidebarBrand } from './components/SidebarBrand';
 import { SidebarNav } from './components/SidebarNav';
 
@@ -19,7 +19,12 @@ export function Sidebar() {
       collapsible="none"
       className="h-screen w-[352px] shrink-0 rounded-none border-none bg-transparent"
     >
-      <div className={['flex h-screen flex-col rounded-r-[30px]', sidebarPanelClasses[tone]].join(' ')}>
+      <div
+        className={[
+          'flex h-screen flex-col rounded-r-[30px]',
+          sidebarPanelClasses[tone],
+        ].join(' ')}
+      >
         <SidebarHeader className="px-[16px] pb-0 pt-[18px]">
           <SidebarBrand tone={tone} />
         </SidebarHeader>

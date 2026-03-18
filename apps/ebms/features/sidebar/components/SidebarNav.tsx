@@ -1,17 +1,13 @@
 'use client';
 
-import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarSeparator,
-} from '@team-4/shadcn';
+import { SidebarGroup, SidebarMenu, SidebarSeparator } from '@team-4/shadcn';
 import { usePathname } from 'next/navigation';
 import { isSidebarItemActive } from '../../../lib/sidebar/isSidebarItemActive';
 import {
   sidebarFooterItems,
   sidebarSections,
 } from '../../../lib/sidebar/sidebarItems';
-import type { SidebarTone } from '../sidebarTheme';
+import type { SidebarTone } from './sidebarTheme';
 import { SidebarNavItem } from './SidebarNavItems';
 
 type SidebarNavProps = {
@@ -33,7 +29,10 @@ export function SidebarNav({ tone }: SidebarNavProps) {
           <SidebarGroup key={section.key} className="p-0">
             {index > 0 ? (
               <SidebarSeparator
-                className={['mx-[10px] mb-[18px]', separatorToneClasses[tone]].join(' ')}
+                className={[
+                  'mx-[10px] mb-[18px]',
+                  separatorToneClasses[tone],
+                ].join(' ')}
               />
             ) : null}
 

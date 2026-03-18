@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Columns2 } from 'lucide-react';
-import type { SidebarTone } from '../sidebarTheme';
+import type { SidebarTone } from './sidebarTheme';
 
 type SidebarBrandProps = {
   tone: SidebarTone;
