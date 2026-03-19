@@ -3,4 +3,7 @@
 /.clerk/
 # OpenNext
 .open-next
+
+
 .env
+.env.local
