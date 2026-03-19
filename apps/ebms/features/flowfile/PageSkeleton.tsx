@@ -1,5 +1,8 @@
-import { Skeleton } from '@team-4/shadcn';
 import { PageDivider, PageShell } from './flowfile.ui';
+
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse ${className ?? ''}`} />;
+}
 
 function HeaderSkeleton() {
   return (

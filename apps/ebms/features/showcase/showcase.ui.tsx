@@ -58,7 +58,7 @@ export function EmployeePreviewCard({
         </div>
 
         <Link
-          href={`/employees/${record.id}`}
+          href={`/employees/profile?employeeId=${encodeURIComponent(record.id)}`}
           className="mt-7 flex h-[62px] w-full items-center justify-center rounded-[26px] bg-[#284661] text-[18px] font-semibold text-[#dfe8f6] transition hover:bg-[#30516f]"
         >
           View Profile

@@ -1,6 +1,7 @@
 'use client';
 
 import { startTransition, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { sidebarUser } from '../../showcase/showcase.data';
 import { DetailNoticeBanner } from './DetailNoticeBanner';
 import { triggerEmployeeAction } from './employeeDetail.api';
@@ -13,7 +14,7 @@ import { fallbackTriggerActions, buildActionDraftValues, buildTriggerPayload } f
 import { useEmployeeDetail } from './useEmployeeDetail';
 
 type EmployeeDetailClientProps = {
-  employeeId: string;
+  employeeId?: string;
 };
 
 function resolveDisplayProfile(
@@ -21,16 +22,17 @@ function resolveDisplayProfile(
   detail: ReturnType<typeof useEmployeeDetail>,
 ) {
   const fallbackProfile = getEmployeeProfile(employeeId);
+  const liveProfile = detail.employee
+    ? toEmployeeProfile(detail.employee, detail.documents, detail.auditLogs)
+    : null;
 
-  if (!fallbackProfile || !detail.employee) {
-    return fallbackProfile;
+  if (!fallbackProfile) {
+    return liveProfile;
   }
 
-  const liveProfile = toEmployeeProfile(
-    detail.employee,
-    detail.documents,
-    detail.auditLogs,
-  );
+  if (!liveProfile) {
+    return fallbackProfile;
+  }
 
   return {
     ...fallbackProfile,
@@ -47,17 +49,28 @@ function resolveDisplayProfile(
 }
 
 export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) {
+  const searchParams = useSearchParams();
+  const resolvedEmployeeId = employeeId ?? searchParams.get('employeeId') ?? '';
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedAction, setSelectedAction] = useState<TriggerActionDefinition | null>(null);
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<{ tone: 'success' | 'error'; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const detail = useEmployeeDetail(employeeId, refreshKey);
+  const detail = useEmployeeDetail(resolvedEmployeeId, refreshKey);
   const actions = useMemo(
     () => (detail.actions.length > 0 ? toTriggerActions(detail.actions) : fallbackTriggerActions),
     [detail.actions],
   );
-  const profile = resolveDisplayProfile(employeeId, detail);
+  const profile = resolveDisplayProfile(resolvedEmployeeId, detail);
+
+  if (!resolvedEmployeeId) {
+    return (
+      <DetailNoticeBanner
+        tone="error"
+        message="Employee ID is missing. Open a profile from the Employees page."
+      />
+    );
+  }
 
   if (!profile) {
     return null;
@@ -82,7 +95,7 @@ export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) 
 
     try {
       const result = await triggerEmployeeAction({
-        employeeId,
+        employeeId: resolvedEmployeeId,
         action: selectedAction.actionName,
         payload: buildTriggerPayload(selectedAction, draftValues, detail.employee),
         requestedByEmail: sidebarUser.email,
