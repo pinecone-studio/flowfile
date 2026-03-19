@@ -1,16 +1,56 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
 import { FilterSelect } from '../showcase/components/FilterSelect';
 import { MetricLegend } from '../showcase/components/MetricLegend';
 import { SearchField } from '../showcase/components/SearchField';
 import { EmployeePreviewCard } from '../showcase/showcase.ui';
 import type { EmployeeDto } from '../../lib/employee/types';
 import { mapEmployeeToPreviewCardData } from '../../lib/employee/mappers';
+import { getEmployees } from '../../lib/employee/api';
 
-type EmployeePageProps = {
-  employees?: EmployeeDto[];
-};
+export default function EmployeePage() {
+  const [employees, setEmployees] = useState<EmployeeDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default function EmployeePage({ employees = [] }: EmployeePageProps) {
-  const employeeCards = employees.map(mapEmployeeToPreviewCardData);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadEmployees() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await getEmployees();
+
+        if (!cancelled) {
+          setEmployees(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : 'Failed to fetch employees',
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadEmployees();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const employeeCards = useMemo(
+    () => employees.map(mapEmployeeToPreviewCardData),
+    [employees],
+  );
 
   const activeCount = employees.filter(
     (employee) => employee.status === 'ACTIVE',
@@ -46,11 +86,19 @@ export default function EmployeePage({ employees = [] }: EmployeePageProps) {
         </div>
       </div>
 
-      <div className="mt-8 grid gap-8 md:grid-cols-2 2xl:grid-cols-4">
-        {employeeCards.map((record) => (
-          <EmployeePreviewCard key={record.id} record={record} />
-        ))}
-      </div>
+      {loading && (
+        <p className="mt-8 text-sm text-white/70">Loading employees...</p>
+      )}
+
+      {error && <p className="mt-8 text-sm text-red-400">{error}</p>}
+
+      {!loading && !error && (
+        <div className="mt-8 grid gap-8 md:grid-cols-2 2xl:grid-cols-4">
+          {employeeCards.map((record) => (
+            <EmployeePreviewCard key={record.id} record={record} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
