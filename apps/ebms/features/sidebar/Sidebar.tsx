@@ -1,117 +1,136 @@
-
-
 'use client';
 
-import React from 'react';
-import {
-  LayoutGrid,
-  Users,
-  FileText,
-  Building2,
-  BarChart3,
-  Settings,
-} from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import {
+  Building2,
+  ChartBar,
+  ClipboardList,
+  FileText,
+  LayoutGrid,
+  PenSquare,
+  Settings,
+  Users,
+} from 'lucide-react';
+import { sidebarUser } from '../showcase/showcase.data';
+import { matchesPath } from './components/MatchesPath';
+import { NavButton, NavItem } from './components/NavButton';
 
-interface SidebarItemProps {
-  icon: React.ElementType;
-  label: string;
-  href: string;
-  isActive?: boolean;
-}
-
-const SidebarItem = ({
-  icon: Icon,
-  label,
-  href,
-  isActive,
-}: SidebarItemProps) => {
-  return (
-    <Link
-      href={href}
-      className={`
-        flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 w-full
-        ${
-          isActive
-            ? 'bg-blue-600/10 text-blue-400 shadow-[inset_0_0_15px_rgba(37,99,235,0.1)]'
-            : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'
-        }
-      `}
-    >
-      <Icon size={19} strokeWidth={isActive ? 2.5 : 2} />
-      <span className="text-[14px] font-medium">{label}</span>
-    </Link>
-  );
-};
 
 export function Sidebar() {
   const pathname = usePathname();
+  const isDocuments = pathname.startsWith('/documents');
+  const isActions = pathname.startsWith('/actions');
+  const isEmployees = pathname === '/' || pathname.startsWith('/employees');
+
+  const primaryItems: NavItem[] = [
+    {
+      href: '/dashboard',
+      label: 'Dashboard',
+      icon: LayoutGrid,
+      active: matchesPath(pathname, '/dashboard'),
+    },
+    {
+      href: '/employees',
+      label: 'Employees',
+      icon: Users,
+      active: matchesPath(pathname, '/employees'),
+    },
+    {
+      href: '/documents',
+      label: 'Documents',
+      icon: FileText,
+      active: matchesPath(pathname, '/documents'),
+      badge: '6',
+    },
+    isDocuments
+      ? {
+          href: '/departments',
+          label: 'Departments',
+          icon: Building2,
+          active: matchesPath(pathname, '/departments'),
+        }
+      : {
+          href: '/actions',
+          label: isActions ? 'Action' : 'Actions',
+          icon: ClipboardList,
+          active: matchesPath(pathname, '/actions'),
+          badge: isActions ? '4+ New Actions' : undefined,
+        },
+  ];
+
+  const secondaryItems: NavItem[] = isEmployees
+    ? [
+        {
+          href: '/reports',
+          label: 'Reports',
+          icon: ChartBar,
+          active: matchesPath(pathname, '/reports'),
+        },
+        {
+          href: '/settings',
+          label: 'Settings',
+          icon: Settings,
+          active: matchesPath(pathname, '/settings'),
+        },
+      ]
+    : [
+        {
+          href: '/reports',
+          label: 'Reports',
+          icon: ChartBar,
+          active: matchesPath(pathname, '/reports'),
+        },
+        {
+          href: '/sign',
+          label: 'Sign Screen',
+          icon: PenSquare,
+          active: matchesPath(pathname, '/sign'),
+        },
+      ];
+
+
 
   return (
-    <aside className="hidden h-screen w-[260px] shrink-0 flex-col bg-transparent md:flex border-r border-white/5">
-      {/* User Profile Section */}
-      <div className="flex items-center gap-3 p-8">
-        <div className="relative h-10 w-10 shrink-0">
-          <img
-            src="https://i.pravatar.cc/100?u=admin"
-            className="rounded-lg object-cover border border-white/10"
-            alt="User"
-          />
-          <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#051124] bg-green-500" />
+    <aside className="w-full shrink-0 border-b border-r border-white/5 bg-[linear-gradient(180deg,rgba(10,20,43,0.98)_0%,rgba(7,15,33,0.98)_55%,rgba(4,9,20,1)_100%)] md:h-screen md:w-[350px] md:border-b-0">
+      <div className="flex h-full flex-col px-4 pb-6 pt-5 md:px-4 md:pb-7 md:pt-6">
+        <div className="flex items-center gap-4 px-2">
+          <div className="relative h-[46px] w-[46px] shrink-0 overflow-hidden rounded-[12px]">
+            <img
+              src={sidebarUser.avatar}
+              alt={sidebarUser.name}
+              className="h-full w-full object-cover"
+            />
+            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#0b1731] bg-[#26cd45]" />
+          </div>
+
+          <div className="min-w-0">
+            <p className="truncate text-[23px] font-medium tracking-[-0.02em] text-white">
+              {sidebarUser.name}
+            </p>
+            <p className="truncate text-[14px] text-[#cfd8eb]">{sidebarUser.email}</p>
+          </div>
         </div>
-        <div className="overflow-hidden">
-          <p className="truncate text-sm font-semibold text-white">
-            Narantsatsralt.B
-          </p>
-          <p className="truncate text-[10px] text-gray-500 font-medium">
-            Narantsatsralt@nest.edu.mn
-          </p>
-        </div>
+
+        <nav className="mt-12 flex flex-col gap-2">
+          {primaryItems.map((item) => (
+            <NavButton key={`${item.href}-${item.label}`} item={item} />
+          ))}
+        </nav>
+
+        <div className="mx-4 my-6 h-px bg-[#1d3869]" />
+
+        <nav className="flex flex-col gap-2">
+          {secondaryItems.map((item) => (
+            <NavButton key={`${item.href}-${item.label}`} item={item} />
+          ))}
+        </nav>
+
+        {/* <nav className="mt-10 flex flex-col gap-2 pt-10 md:mt-auto">
+          {footerItems.map((item) => (
+            <NavButton key={`${item.href}-${item.label}`} item={item} />
+          ))}
+        </nav> */}
       </div>
-
-      {/* Navigation */}
-      <nav className="flex flex-1 flex-col gap-1 px-4">
-        <SidebarItem
-          icon={LayoutGrid}
-          label="Dashboard"
-          href="/dashboard"
-          isActive={pathname === '/dashboard'}
-        />
-        <SidebarItem
-          icon={Users}
-          label="Employees"
-          href="/employees"
-          isActive={pathname === '/employees'}
-        />
-        <SidebarItem
-          icon={FileText}
-          label="Documents"
-          href="/documents"
-          isActive={pathname === '/documents' || pathname === '/'}
-        />
-        <SidebarItem
-          icon={Building2}
-          label="Departments"
-          href="/departments"
-          isActive={pathname === '/departments'}
-        />
-
-        <div className="my-6 h-[1px] w-full bg-white/5 mx-4" />
-
-        <SidebarItem
-          icon={BarChart3}
-          label="Reports"
-          href="/reports"
-          isActive={pathname === '/reports'}
-        />
-        <SidebarItem
-          icon={Settings}
-          label="Settings"
-          href="/settings"
-          isActive={pathname === '/settings'}
-        />
-      </nav>
     </aside>
   );
 }

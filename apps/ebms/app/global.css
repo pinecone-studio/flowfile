@@ -102,6 +102,26 @@ body {
   line-height: inherit;
   margin: 0;
 }
+
+html,
+body {
+  min-height: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(8, 15, 31, 0.72);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(8, 15, 31, 0.72);
+  border-radius: 9999px;
+  background: rgba(65, 100, 161, 0.78);
+}
 h1,
 h2,
 p,
