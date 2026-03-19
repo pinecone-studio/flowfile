@@ -1,8 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": false,
     "jsx": "preserve",
     "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
     "emitDeclarationOnly": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -42,10 +45,9 @@
     "lib/**/*.tsx",
     "lib/**/*.js",
     "lib/**/*.jsx",
-    "../../libs/shadcn/src/**/*.ts",
-    "../../libs/shadcn/src/**/*.tsx",
     "../../apps/ebms/.next/types/**/*.ts",
     "../../dist/apps/ebms/.next/types/**/*.ts",
+    "signature_pad.d.ts",
     "next-env.d.ts"
   ],
   "exclude": [

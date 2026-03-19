@@ -5,5 +5,10 @@
 .open-next
 
 
+<<<<<<< Updated upstream
 .env
 .env.local
+=======
+.env.local
+
+>>>>>>> Stashed changes
