@@ -1,9 +1,5 @@
-import { DocumentPanel } from '../../features/documents/components/DocumentPanel';
+import DocumentsPage from '../../features/documents/DocumentsPage';
 
-export default function DocumentsPage() {
-  return (
-    <div className="w-full h-full p-8">
-      <DocumentPanel />
-    </div>
-  );
+export default function Documents() {
+  return <DocumentsPage />;
 }
