@@ -1,8 +1,5 @@
 import type { EmployeeDto } from './types';
-import type {
-  EmployeeCardRecord,
-  Tone,
-} from '../../features/showcase/showcase.data';
+import type { EmployeeCardRecord } from '../../features/showcase/showcase.data';
 
 function mapStatus(
   status: EmployeeDto['status'],
