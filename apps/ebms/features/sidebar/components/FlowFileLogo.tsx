@@ -49,7 +49,7 @@ function FlowFileLogo() {
           y2="40"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#123878" stop-opacity="0.6" />
+          <stop stopColor="#123878" stopOpacity="0.6" />
           <stop offset="1" stopColor="#D0D0D0" />
         </linearGradient>
         <linearGradient
@@ -71,7 +71,7 @@ function FlowFileLogo() {
           y2="40"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#123878" stop-opacity="0.6" />
+          <stop stopColor="#123878" stopOpacity="0.6" />
           <stop offset="1" stopColor="#D0D0D0" />
         </linearGradient>
       </defs>

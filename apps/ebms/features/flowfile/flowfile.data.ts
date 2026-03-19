@@ -20,7 +20,7 @@ export const sidebarUser = {
 export const employeeCards = [
   {
     id: 'emp-0042',
-    href: '/employees/emp-0042',
+    href: '/employees/profile?employeeId=emp-0042',
     status: 'Active',
     statusTone: 'active' as const,
     image: '/image%205.svg',
@@ -33,7 +33,7 @@ export const employeeCards = [
   },
   {
     id: 'emp-0043',
-    href: '/employees/emp-0042',
+    href: '/employees/profile?employeeId=emp-0043',
     status: 'Active',
     statusTone: 'active' as const,
     image: '/image%205.svg',
@@ -46,7 +46,7 @@ export const employeeCards = [
   },
   {
     id: 'emp-0044',
-    href: '/employees/emp-0042',
+    href: '/employees/profile?employeeId=emp-0044',
     status: 'Active',
     statusTone: 'active' as const,
     image: '/image%205.svg',
@@ -59,7 +59,7 @@ export const employeeCards = [
   },
   {
     id: 'emp-0045',
-    href: '/employees/emp-0042',
+    href: '/employees/profile?employeeId=emp-0045',
     status: 'Inactive',
     statusTone: 'inactive' as const,
     image: '/image%205.svg',

@@ -31,6 +31,18 @@ export function useEmployeeDetail(employeeId: string, refreshKey: number) {
   const [state, setState] = useState<EmployeeDetailState>(initialState);
 
   useEffect(() => {
+    if (!employeeId) {
+      setState({
+        employee: null,
+        actions: [],
+        documents: [],
+        auditLogs: [],
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
     let active = true;
 
     setState((current) => ({
