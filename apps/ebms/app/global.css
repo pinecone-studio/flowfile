@@ -101,6 +101,11 @@ body {
   font-family: inherit;
   line-height: inherit;
   margin: 0;
+  background:
+    radial-gradient(circle at 75% 24%, rgba(144, 175, 222, 0.18), transparent 22%),
+    radial-gradient(circle at 67% 68%, rgba(118, 151, 203, 0.18), transparent 24%),
+    linear-gradient(180deg, #16294f 0%, #0c1730 46%, #050b16 100%);
+  color: #f5f7ff;
 }
 
 html,
@@ -144,6 +149,14 @@ h2 {
 a {
   color: inherit;
   text-decoration: inherit;
+}
+
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
 }
 pre {
   font-family:

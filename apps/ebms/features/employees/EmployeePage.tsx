@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 'use client';
 
 import { useDeferredValue, useState } from 'react';
@@ -29,6 +30,19 @@ const EmptyState = () => (
     No employees matched your filters.
   </div>
 );
+=======
+import Link from 'next/link';
+import { employeeCards } from '../flowfile/flowfile.data';
+import {
+  FilterChip,
+  MetricLegend,
+  PageDivider,
+  PageShell,
+  PageTitle,
+  SearchBar,
+  StatusPill,
+} from '../flowfile/flowfile.ui';
+>>>>>>> Stashed changes
 
 export default function EmployeePage() {
   const { employees, isLoading, error } = useEmployees();
@@ -52,6 +66,7 @@ export default function EmployeePage() {
   });
 
   return (
+<<<<<<< Updated upstream
     <section className="mx-auto w-full max-w-[1548px] pb-10">
       <h1 className="text-[36px] font-semibold tracking-[-0.03em] text-white md:text-[38px]">
         Employee
@@ -70,11 +85,27 @@ export default function EmployeePage() {
             color: '#83838d',
           },
         ]}
+=======
+    <PageShell>
+      <PageTitle
+        title="Employees"
+        subtitle={
+          <MetricLegend
+            items={[
+              { label: 'Active', value: '24', color: '#22cd35' },
+              { label: 'Inactive', value: '8', color: '#8b857a' },
+            ]}
+          />
+        }
+>>>>>>> Stashed changes
       />
 
-      <div className="mt-12 flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-        <SearchField
+      <PageDivider />
+
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+        <SearchBar
           placeholder="Search Employees by name, ID, Department, or Position..."
+<<<<<<< Updated upstream
           className="max-w-[540px]"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
@@ -152,7 +183,75 @@ export default function EmployeePage() {
               <EmployeePreviewCard key={record.id} record={record} />
             ))
           : null}
+=======
+          className="max-w-[598px]"
+        />
+
+        <div className="flex flex-wrap items-center gap-5">
+          <FilterChip label="Latest Action" prefix="Filter:" />
+          <FilterChip label="Status" />
+          <FilterChip label="Role" />
+        </div>
       </div>
-    </section>
+
+      <div className="flex flex-wrap gap-4 xl:justify-between">
+        {employeeCards.map((record) => (
+          <article
+            key={record.id}
+            className="flex h-[434px] w-[274px] flex-col rounded-[36px] border border-white/5 bg-[linear-gradient(180deg,rgba(27,49,92,0.96)_0%,rgba(21,36,65,0.96)_100%)] p-[10px_12px] shadow-[0_26px_54px_rgba(5,10,24,0.24)]"
+          >
+            <div className="relative h-[250px] overflow-hidden rounded-[28px]">
+              <img
+                src={record.image}
+                alt={record.name}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,26,0)_44%,rgba(8,14,26,0.08)_70%,rgba(0,0,0,0.88)_100%)]" />
+              <StatusPill
+                label={record.status}
+                tone={record.statusTone}
+                compact
+                className="absolute left-4 top-4"
+              />
+
+              <div className="absolute inset-x-5 bottom-5">
+                <p className="text-[16px] leading-5 text-[#ebeff9]">{record.role}</p>
+                <h2 className="mt-2 text-[22px] font-semibold leading-7 tracking-[-0.02em] text-white">
+                  {record.name}
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex flex-1 flex-col px-[6px] pt-5">
+              <p className="text-[16px] text-[#dbe3f3]">
+                Email:{' '}
+                <span className="font-medium text-[#eef3ff]">{record.email}</span>
+              </p>
+
+              <p className="mt-5 text-[16px] text-[#cfd7ea]">Latest Action:</p>
+
+              <div className="mt-3 flex items-center gap-3">
+                <StatusPill
+                  label={record.latestAction}
+                  tone={record.actionTone}
+                  className="h-[46px]"
+                />
+                <span className="text-[16px] font-medium text-[#ecf2ff]">
+                  {record.latestDate}
+                </span>
+              </div>
+
+              <Link
+                href={record.href}
+                className="mt-auto flex h-[68px] items-center justify-center rounded-[26px] bg-[#21407b] text-[18px] font-semibold text-[#f5f8ff] transition hover:bg-[#295196]"
+              >
+                View Profile
+              </Link>
+            </div>
+          </article>
+        ))}
+>>>>>>> Stashed changes
+      </div>
+    </PageShell>
   );
 }

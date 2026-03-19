@@ -1,86 +1,100 @@
-'use client'
+'use client';
 
-import { useEffect, useRef } from 'react'
-import SignaturePad from 'signature_pad'
+import { useEffect, useRef } from 'react';
+import SignaturePad from 'signature_pad';
 
 export default function SignPage() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const signaturePadRef = useRef<SignaturePad | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const padRef = useRef<SignaturePad | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
 
     const resizeCanvas = () => {
-      const ratio = Math.max(window.devicePixelRatio || 1, 1)
-      canvas.width = 500 * ratio
-      canvas.height = 220 * ratio
-      canvas.style.width = '500px'
-      canvas.style.height = '220px'
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const width = canvas.parentElement?.clientWidth ?? 560;
+      const height = 360;
 
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-      ctx.scale(ratio, ratio)
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
 
-      signaturePadRef.current?.clear()
-    }
+      const context = canvas.getContext('2d');
+      if (!context) return;
 
-    resizeCanvas()
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      padRef.current?.clear();
+    };
 
-    signaturePadRef.current = new SignaturePad(canvas, {
-      minWidth: 1,
-      maxWidth: 3,
-      penColor: 'black',
-    })
+    resizeCanvas();
 
-    window.addEventListener('resize', resizeCanvas)
+    padRef.current = new SignaturePad(canvas, {
+      backgroundColor: 'rgba(0,0,0,0)',
+      penColor: '#0b1832',
+      minWidth: 1.2,
+      maxWidth: 2.8,
+    });
+
+    window.addEventListener('resize', resizeCanvas);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas)
-      signaturePadRef.current?.off()
-      signaturePadRef.current = null
-    }
-  }, [])
+      window.removeEventListener('resize', resizeCanvas);
+      padRef.current?.off();
+      padRef.current = null;
+    };
+  }, []);
 
-  const clearSignature = () => {
-    signaturePadRef.current?.clear()
-  }
-
-  const saveSignature = () => {
-    const pad = signaturePadRef.current
-    if (!pad || pad.isEmpty()) {
-      alert('Please draw your signature first.')
-      return
+  const handleApprove = () => {
+    if (padRef.current?.isEmpty()) {
+      window.alert('Please sign before approving.');
+      return;
     }
 
-    const dataUrl = pad.toDataURL('image/png')
-    console.log(dataUrl)
-
-    const newWindow = window.open('')
-    if (newWindow) {
-      newWindow.document.write(`<img src="${dataUrl}" alt="signature" />`)
-    }
-  }
+    console.log('Signature approved');
+  };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1>Sign here</h1>
+    <div className="w-full max-w-[670px] overflow-hidden rounded-[28px] bg-[#08101c]/95 shadow-[0_40px_80px_rgba(0,0,0,0.38)]">
+      <div className="px-12 py-10">
+        <h1 className="text-[28px] font-semibold tracking-[-0.03em] text-white">
+          Signing Form
+        </h1>
 
-      <canvas
-        ref={canvasRef}
-        style={{
-          border: '1px solid #ccc',
-          borderRadius: 8,
-          touchAction: 'none',
-          display: 'block',
-          background: '#fff',
-        }}
-      />
+        <div className="mt-10 flex items-start justify-between gap-10">
+          <div>
+            <p className="text-[20px] text-[#7d92be]">Narantsatsral.B</p>
+            <p className="mt-1 text-[22px] text-[#f0f4ff]">
+              Salary Increase Notice ↗
+            </p>
+          </div>
 
-      <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-        <button onClick={clearSignature}>Clear</button>
-        <button onClick={saveSignature}>Save</button>
+          <div className="text-right">
+            <p className="text-[20px] text-[#7d92be]">Jun 15, 2026</p>
+            <p className="text-[22px] text-[#f0f4ff]">09:14</p>
+          </div>
+        </div>
+
+        <div className="mt-10 h-px bg-[#2b4d89]/85" />
+
+        <h2 className="mt-8 text-[28px] font-semibold text-white">Sign Here</h2>
+
+        <div className="mt-8 rounded-[18px] bg-[#8fa1c1] p-0">
+          <canvas
+            ref={canvasRef}
+            className="block w-full rounded-[18px] touch-none"
+          />
+        </div>
       </div>
+
+      <button
+        type="button"
+        onClick={handleApprove}
+        className="flex h-[70px] w-full items-center justify-center bg-[#23478a] text-[24px] font-semibold text-white"
+      >
+        Approve
+      </button>
     </div>
-  )
+  );
 }

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import './global.css';
-import { Sidebar } from '../features/sidebar/Sidebar';
+import { AppChrome } from '../features/layout/AppChrome';
 
 export const metadata = {
   title: 'FlowFile',
@@ -9,6 +9,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
+<<<<<<< Updated upstream
     <html lang="en" data-scroll-behavior="smooth">
       <body className="min-h-screen bg-[#050b16] text-[#f5f7ff] antialiased">
         <div className="min-h-screen md:flex">
@@ -29,6 +30,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </main>
           </div>
         </div>
+=======
+    <html lang="en">
+      <body className="min-h-screen text-[#f5f7ff] antialiased">
+        <AppChrome>{children}</AppChrome>
+>>>>>>> Stashed changes
       </body>
     </html>
   );

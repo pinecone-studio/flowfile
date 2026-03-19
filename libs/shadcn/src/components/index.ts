@@ -21,4 +21,5 @@ export * from './ui/input';
 export * from './ui/input-group';
 export * from './ui/separator';
 export * from './ui/sidebar';
+export * from './ui/skeleton';
 export * from './ui/textarea';

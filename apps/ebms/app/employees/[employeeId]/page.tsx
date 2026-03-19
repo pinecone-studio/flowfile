@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { notFound } from 'next/navigation';
 import { EmployeeDetailClient } from '../../../features/employees/detail/EmployeeDetailClient';
 import {
@@ -24,4 +25,14 @@ export default async function EmployeeDetailRoute({
   }
 
   return <EmployeeDetailClient employeeId={employeeId} />;
+=======
+import EmployeeDetailPage from '../../../features/employees/EmployeeDetailPage';
+
+export function generateStaticParams() {
+  return [{ employeeId: 'emp-0042' }];
+}
+
+export default function EmployeeDetail() {
+  return <EmployeeDetailPage />;
+>>>>>>> Stashed changes
 }
