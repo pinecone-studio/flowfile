@@ -1,4 +1,5 @@
 import type { EmployeeCardRecord } from './showcase.data';
+import Link from 'next/link';
 import { TonePill } from './components/TonePill';
 
 export function EmployeePreviewCard({
@@ -56,12 +57,12 @@ export function EmployeePreviewCard({
           </span>
         </div>
 
-        <button
-          type="button"
+        <Link
+          href={`/employees/${record.id}`}
           className="mt-7 flex h-[62px] w-full items-center justify-center rounded-[26px] bg-[#284661] text-[18px] font-semibold text-[#dfe8f6] transition hover:bg-[#30516f]"
         >
           View Profile
-        </button>
+        </Link>
       </div>
     </article>
   );
