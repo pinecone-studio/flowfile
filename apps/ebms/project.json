@@ -1,0 +1,31 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "ebms",
+  "projectType": "application",
+  "sourceRoot": "apps/ebms",
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint apps/ebms/app apps/ebms/features apps/ebms/lib apps/ebms/specs apps/ebms/codegen.ts apps/ebms/eslint.config.mjs apps/ebms/next.config.js apps/ebms/postcss.config.js"
+      },
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/apps/ebms/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ],
+      "outputs": ["{options.outputFile}"]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p apps/ebms/tsconfig.json --noEmit"
+      }
+    }
+  }
+}
