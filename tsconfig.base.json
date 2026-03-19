@@ -3,9 +3,9 @@
     "baseUrl": ".",
     "composite": true,
     "paths": {
-  "@team-4/shadcn": ["dist/libs/shadcn"],
-  "@team-4/shadcn/server": ["dist/libs/shadcn/server"]
-},
+      "@team-4/shadcn": ["libs/shadcn/src/index.ts"],
+      "@team-4/shadcn/server": ["libs/shadcn/src/server.ts"]
+    },
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "importHelpers": true,
