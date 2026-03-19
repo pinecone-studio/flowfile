@@ -19,7 +19,7 @@ app.use(
   '*',
   cors({
     origin: '*',
-    allowHeaders: ['Content-Type'],
+    allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
   }),
 );
@@ -37,6 +37,7 @@ app.route('/api/v1', documentsRoutes);
 app.route('/api/v1', auditRoutes);
 app.route('/api/v1', reviewRoutes);
 app.route('/webhooks', webhooksRoutes);
+app.route('/employees', employeeRoutes);
 
 app.get('/db-test', async (c) => {
   const result = await c.env.DB.prepare('SELECT 1 as ok').first();
@@ -71,7 +72,5 @@ app.get('/db-tables', async (c) => {
 //------------------Employee service zoriulsan, endees ehelj bga----------
 
 app.post('/epas/events', receiveEmployeeEvent);
-
-app.route('/employees', employeeRoutes);
 
 export default app;
