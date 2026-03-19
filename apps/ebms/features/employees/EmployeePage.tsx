@@ -59,8 +59,16 @@ export default function EmployeePage() {
 
       <MetricLegend
         items={[
-          { label: 'Active', value: String(pageData.activeCount), color: '#23cd35' },
-          { label: 'Inactive', value: String(pageData.inactiveCount), color: '#83838d' },
+          {
+            label: 'Active',
+            value: String(pageData.activeCount),
+            color: '#23cd35',
+          },
+          {
+            label: 'Inactive',
+            value: String(pageData.inactiveCount),
+            color: '#83838d',
+          },
         ]}
       />
 
@@ -136,7 +144,9 @@ export default function EmployeePage() {
       <div className="mt-8 grid gap-8 md:grid-cols-2 2xl:grid-cols-4">
         {isLoading ? <LoadingState /> : null}
         {!isLoading && error ? <ErrorState message={error} /> : null}
-        {!isLoading && !error && filteredCards.length === 0 ? <EmptyState /> : null}
+        {!isLoading && !error && filteredCards.length === 0 ? (
+          <EmptyState />
+        ) : null}
         {!isLoading && !error
           ? filteredCards.map((record) => (
               <EmployeePreviewCard key={record.id} record={record} />

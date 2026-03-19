@@ -1,6 +1,9 @@
 export type EmployeeStatus = '' | 'ACTIVE' | 'INACTIVE' | 'TERMINATED';
 export type BinaryChoice = '' | 'YES' | 'NO';
 
+export type EmployeeCardStatus = 'Active' | 'Inactive' | 'Terminated';
+export type EmployeeCardStatusTone = 'success' | 'neutral' | 'danger';
+
 export type AddEmployeeFieldName =
   | 'firstName'
   | 'lastName'
@@ -41,3 +44,29 @@ export type AddEmployeeFormData = {
 export type AddEmployeeFormErrors = Partial<
   Record<AddEmployeeFieldName, string>
 >;
+
+export type EmployeeDto = {
+  id: string;
+  entraId?: string | null;
+  firstName: string;
+  lastName: string;
+  firstNameEng?: string | null;
+  lastNameEng?: string | null;
+  email?: string | null;
+  imageUrl?: string | null;
+  hireDate?: string | null;
+  numberOfVacationDays?: number | null;
+  terminationDate?: string | null;
+  status: Exclude<EmployeeStatus, ''>;
+  github?: string | null;
+  department?: string | null;
+  branch?: string | null;
+  employeeCode: string;
+  level?: string | null;
+  isKpi: boolean;
+  isSalaryCompany: boolean;
+  birthDayAndMonth?: string | null;
+  birthdayPoster?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
