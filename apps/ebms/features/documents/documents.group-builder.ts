@@ -19,6 +19,8 @@ type DocumentsMaps = {
   auditLogsByJobId: Map<string, ApiAuditLog[]>;
 };
 
+type GroupBuildResult = DocumentsPageGroup | null;
+
 export function buildDocumentMaps(input: {
   employees: ApiEmployee[];
   documents: ApiGeneratedDocument[];
@@ -66,7 +68,7 @@ export function buildAllGroups(input: {
   return input.jobs
     .slice()
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
-    .map((job) => {
+    .map((job): GroupBuildResult => {
       const employee = employeeMap.get(job.employeeId);
       if (!employee) {
         return null;
@@ -112,5 +114,5 @@ export function buildAllGroups(input: {
         ),
       } satisfies DocumentsPageGroup;
     })
-    .filter((group): group is DocumentsPageGroup => Boolean(group));
+    .filter((group): group is DocumentsPageGroup => group !== null);
 }

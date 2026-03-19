@@ -152,9 +152,13 @@ export function TabsRow({
           onClick={() => onChange?.(item, index)}
           className={cx(
             'rounded-[12px] px-4 py-3 transition',
-            activeItem ? activeItem === item : index === activeIndex
-              ? 'bg-[#23478a] text-white shadow-[0_16px_28px_rgba(7,21,48,0.3)]'
-              : 'text-[#e4eaf8]'
+            activeItem
+              ? activeItem === item
+                ? 'bg-[#23478a] text-white shadow-[0_16px_28px_rgba(7,21,48,0.3)]'
+                : 'text-[#e4eaf8]'
+              : index === activeIndex
+                ? 'bg-[#23478a] text-white shadow-[0_16px_28px_rgba(7,21,48,0.3)]'
+                : 'text-[#e4eaf8]'
           )}
         >
           {item}

@@ -190,7 +190,7 @@ export default function SignPage() {
         method: 'POST',
         body: JSON.stringify({
           reviewerName: review?.reviewRequest.reviewerName || undefined,
-          signatureImageUrl: padRef.current?.toDataURL(),
+          signatureImageUrl: canvasRef.current?.toDataURL() ?? null,
           signMethod: 'signature_pad',
         }),
       });
