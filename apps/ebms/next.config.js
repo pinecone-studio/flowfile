@@ -7,6 +7,7 @@ const { composePlugins, withNx } = require('@nx/next');
  **/
 const nextConfig = {
   nx: {},
+  output: 'export',
   images: {
     unoptimized: true,
   },
