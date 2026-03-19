@@ -42,8 +42,6 @@
     "lib/**/*.tsx",
     "lib/**/*.js",
     "lib/**/*.jsx",
-    "../../libs/shadcn/src/**/*.ts",
-    "../../libs/shadcn/src/**/*.tsx",
     "../../apps/ebms/.next/types/**/*.ts",
     "../../dist/apps/ebms/.next/types/**/*.ts",
     "next-env.d.ts"
@@ -62,10 +60,5 @@
     "eslint.config.js",
     "eslint.config.cjs",
     "eslint.config.mjs"
-  ],
-  "references": [
-    {
-      "path": "../../libs/shadcn"
-    }
   ]
 }
