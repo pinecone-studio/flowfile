@@ -108,7 +108,7 @@ export const parseDocuments = (action: Pick<ActionRecord, 'documentsJson'>) => {
       document.templateName ?? document.template ?? `${documentType}.html`;
     const fileName =
       document.fileName ??
-      templateName.replace(/\.(docx|pdf)$/i, '.html');
+      templateName.replace(/\.(docx|html)$/i, '.pdf');
 
     return {
       documentType,

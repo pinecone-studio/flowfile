@@ -51,6 +51,7 @@ export type ReviewRequestLike = {
 export type DocumentLike = {
   id: string;
   fileName: string;
+  fileUrl?: string | null;
   documentType: string;
   actionName: string;
 };

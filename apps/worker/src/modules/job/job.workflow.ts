@@ -1,14 +1,14 @@
 import { logEvent } from '../audit/audit.service';
 import {
   addGeneratedDocument,
-  storeGeneratedDocumentHtml,
+  storeGeneratedDocumentPdf,
   updateGeneratedDocument,
 } from '../document/document.service';
 import { createReviewRequest } from '../review/review.service';
 import { getTemplateByName } from '../templates/templates.service';
 import {
   buildDocumentFileUrl,
-  buildWorkflowDocumentHtml,
+  buildWorkflowDocumentPdf,
   parseWorkflowPayload,
   resolveWorkflowRecipients,
 } from '../workflow/workflow.service';
@@ -114,7 +114,7 @@ export async function generateWorkflowArtifacts(
         documentConfig.generationOrder,
         documentConfig.fileName,
       );
-    const htmlContent = buildWorkflowDocumentHtml({
+    const pdfBytes = buildWorkflowDocumentPdf({
       documentType: documentConfig.documentType,
       actionName: context.action.actionName,
       employee: context.employee,
@@ -143,7 +143,7 @@ export async function generateWorkflowArtifacts(
       );
     }
 
-    await storeGeneratedDocumentHtml(env, storagePath, htmlContent);
+    await storeGeneratedDocumentPdf(env, storagePath, pdfBytes);
 
     const updatedDocument = await updateGeneratedDocument(env, document.id, {
       fileUrl: buildDocumentFileUrl(document.id),

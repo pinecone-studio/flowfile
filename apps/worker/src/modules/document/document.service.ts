@@ -66,18 +66,18 @@ export const updateGeneratedDocument = async (
   return repoUpdateGeneratedDocument(env, id, input);
 };
 
-export const storeGeneratedDocumentHtml = async (
+export const storeGeneratedDocumentPdf = async (
   env: EnvWithBindings,
   storagePath: string,
-  htmlContent: string,
+  pdfBytes: Uint8Array,
 ) => {
   if (!env.DOCS_BUCKET) {
     return;
   }
 
-  await env.DOCS_BUCKET.put(storagePath, htmlContent, {
+  await env.DOCS_BUCKET.put(storagePath, pdfBytes, {
     httpMetadata: {
-      contentType: 'text/html; charset=utf-8',
+      contentType: 'application/pdf',
     },
   });
 };
