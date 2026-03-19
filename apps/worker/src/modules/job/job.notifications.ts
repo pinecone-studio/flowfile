@@ -1,7 +1,9 @@
 import { logEvent } from '../audit/audit.service';
 import {
+  buildDocumentsGeneratedNotifications,
   buildReviewNotifications,
   emitWorkflowNotifications,
+  resolveGeneratedDocumentRecipients,
 } from '../workflow/workflow.service';
 import type { EnvWithBindings } from './job.types';
 import type {
@@ -62,12 +64,27 @@ export async function emitWorkflowGenerationNotifications(
     message: `${createdReviewRequests.length} review requests created`,
   });
 
+  const generatedRecipients = await resolveGeneratedDocumentRecipients(
+    env,
+    context.employee,
+    context.actionPayload,
+    context.input.requestedByEmail,
+  );
   const initialReviewRequests = getInitialReviewRequests(createdReviewRequests);
-  const notifications = buildReviewNotifications({
-    job: activeJob ?? job,
-    documents: createdDocuments,
-    reviewRequests: initialReviewRequests,
-    baseUrl: env.APP_BASE_URL,
-  });
+  const notifications = [
+    ...buildDocumentsGeneratedNotifications({
+      job: activeJob ?? job,
+      employee: context.employee,
+      documents: createdDocuments,
+      recipients: generatedRecipients,
+      baseUrl: env.APP_BASE_URL,
+    }),
+    ...buildReviewNotifications({
+      job: activeJob ?? job,
+      documents: createdDocuments,
+      reviewRequests: initialReviewRequests,
+      baseUrl: env.APP_BASE_URL,
+    }),
+  ];
   await emitWorkflowNotifications(env, notifications);
 }

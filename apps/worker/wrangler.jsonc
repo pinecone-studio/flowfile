@@ -5,13 +5,11 @@
 
   "vars": {
     "APP_BASE_URL": "https://team4-epas-worker.zz7.workers.dev/",
-    "EPAS_WEBHOOK_URL": "http://127.0.0.1:8787/epas/events"
+    "EPAS_WEBHOOK_URL": "http://127.0.0.1:8787/epas/events",
     // Optional email delivery settings:
-    // "EMAIL_WEBHOOK_URL": "https://your-email-service.example/send",
-    // "MAIL_FROM_EMAIL": "noreply@example.com",
-    // "MAIL_FROM_NAME": "EPAS",
-    // "MAIL_REPLY_TO": "hr@example.com",
-    // "MAILCHANNELS_API_URL": "https://api.mailchannels.net/tx/v1/send",
+   
+    "BREVO_FROM_EMAIL": "25lp7655@nest.edu.mn",
+    "BREVO_FROM_NAME": "FlowFile"
   },
 
   "d1_databases": [
