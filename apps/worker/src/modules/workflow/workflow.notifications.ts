@@ -49,6 +49,7 @@ export const buildReviewNotifications = (input: {
       input.baseUrl,
       buildReviewUrl(reviewRequest.reviewToken),
     );
+    const documentUrl = buildAbsoluteUrl(input.baseUrl, document?.fileUrl ?? null);
     const intro = `${reviewRequest.reviewerName ?? reviewRequest.reviewerEmail}, please review and sign ${
       document?.fileName ?? 'the requested document'
     }.`;
@@ -57,9 +58,10 @@ export const buildReviewNotifications = (input: {
       `Document: ${document?.documentType ?? 'Generated document'}`,
       `Role: ${titleCaseRole(reviewRequest.signerRole)}`,
     ];
-    const links = reviewUrl
-      ? [{ label: 'Open review request', url: reviewUrl }]
-      : [];
+    const links = [
+      reviewUrl ? { label: 'Open review request', url: reviewUrl } : null,
+      documentUrl ? { label: 'Open current document', url: documentUrl } : null,
+    ].filter((link): link is { label: string; url: string } => Boolean(link));
 
     return {
       type: 'review_request',

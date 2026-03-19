@@ -2,7 +2,7 @@ import { logEvent } from '../audit/audit.service';
 import {
   getGeneratedDocumentById,
   getGeneratedDocuments,
-  storeGeneratedDocumentHtml,
+  storeGeneratedDocumentPdf,
   updateGeneratedDocument,
 } from '../document/document.service';
 import { getEmployeeById } from '../employee/employee.service';
@@ -11,13 +11,24 @@ import { getTemplateByName } from '../templates/templates.service';
 import {
   buildCompletionNotifications,
   buildDocumentFileUrl,
-  buildWorkflowDocumentHtml,
+  buildWorkflowDocumentPdf,
   emitWorkflowNotifications,
   parseWorkflowPayload,
+  resolveGeneratedDocumentRecipients,
 } from '../workflow/workflow.service';
 import { listReviewRequests as repoListReviewRequests } from './review.repository';
 import type { EnvWithBindings } from './review.types';
 import { nowIso, reviewsToWorkflowRecipients } from './review.utils';
+
+function dedupeRecipients<T extends { email: string; role: string }>(recipients: T[]) {
+  return recipients.filter(
+    (recipient, index, current) =>
+      current.findIndex(
+        (candidate) =>
+          candidate.email === recipient.email && candidate.role === recipient.role,
+      ) === index,
+  );
+}
 
 export async function syncDocumentAndJobStatus(
   env: EnvWithBindings,
@@ -31,6 +42,15 @@ export async function syncDocumentAndJobStatus(
     return;
   }
 
+  const employee = await getEmployeeById(env, job.employeeId);
+
+  if (!employee) {
+    throw new Error(`Employee not found: ${job.employeeId}`);
+  }
+
+  const payload = parseWorkflowPayload(
+    job.inputPayloadJson ? JSON.parse(job.inputPayloadJson) : {},
+  );
   const documentReviews = await repoListReviewRequests(env, { documentId });
   const allDocumentApproved =
     documentReviews.length > 0 &&
@@ -38,60 +58,52 @@ export async function syncDocumentAndJobStatus(
   const anyDocumentRejected = documentReviews.some(
     (review) => review.status === 'rejected',
   );
+  const documentStatus = anyDocumentRejected
+    ? 'rejected'
+    : allDocumentApproved
+      ? 'completed'
+      : documentReviews.some((review) => review.status === 'approved')
+        ? 'partially_signed'
+        : 'awaiting_signatures';
+  const workflowRecipients = reviewsToWorkflowRecipients(documentReviews);
+  const template = await getTemplateByName(env, document.templateName);
+  const approvalSummary = documentReviews.map((review) => ({
+    reviewerEmail: review.reviewerEmail,
+    reviewerName: review.reviewerName,
+    approvedAt: review.approvedAt,
+    signMethod: review.signMethod,
+  }));
+  const pdfBytes = buildWorkflowDocumentPdf({
+    documentType: document.documentType,
+    actionName: job.actionName,
+    employee,
+    payload,
+    recipients: workflowRecipients,
+    status: documentStatus,
+    templateHtml: template?.htmlContent ?? null,
+    approvalSummary,
+  });
+  const approvedReviews = documentReviews.filter(
+    (review) => review.status === 'approved',
+  );
+  const lastSignedReview = [...approvedReviews]
+    .reverse()
+    .find((review) => Boolean(review.signatureImageUrl));
 
-  if (anyDocumentRejected && document.status !== 'rejected') {
-    await updateGeneratedDocument(env, document.id, {
-      status: 'rejected',
-    });
-  }
+  await storeGeneratedDocumentPdf(env, document.storagePath, pdfBytes);
+  await updateGeneratedDocument(env, document.id, {
+    status: documentStatus,
+    fileUrl: buildDocumentFileUrl(document.id),
+    signedBy: approvedReviews.map((review) => review.reviewerEmail).join(', ') || null,
+    signedAt: allDocumentApproved ? nowIso() : null,
+    signMethod:
+      approvedReviews.map((review) => review.signMethod).filter(Boolean).join(', ') ||
+      null,
+    signatureImageUrl: lastSignedReview?.signatureImageUrl ?? null,
+    finalizedAt: allDocumentApproved ? nowIso() : null,
+  });
 
   if (allDocumentApproved && document.status !== 'completed') {
-    const employee = await getEmployeeById(env, job.employeeId);
-
-    if (!employee) {
-      throw new Error(`Employee not found: ${job.employeeId}`);
-    }
-
-    const template = await getTemplateByName(env, document.templateName);
-    const workflowRecipients = reviewsToWorkflowRecipients(documentReviews);
-    const payload = parseWorkflowPayload(
-      job.inputPayloadJson ? JSON.parse(job.inputPayloadJson) : {},
-    );
-    const finalizedAt = nowIso();
-    const htmlContent = buildWorkflowDocumentHtml({
-      documentType: document.documentType,
-      actionName: job.actionName,
-      employee,
-      payload,
-      recipients: workflowRecipients,
-      status: 'completed',
-      templateHtml: template?.htmlContent ?? null,
-      approvalSummary: documentReviews.map((review) => ({
-        reviewerEmail: review.reviewerEmail,
-        reviewerName: review.reviewerName,
-        approvedAt: review.approvedAt,
-        signMethod: review.signMethod,
-      })),
-    });
-
-    await storeGeneratedDocumentHtml(env, document.storagePath, htmlContent);
-    const lastSignedReview = [...documentReviews]
-      .reverse()
-      .find((review) => Boolean(review.signatureImageUrl));
-
-    await updateGeneratedDocument(env, document.id, {
-      status: 'completed',
-      fileUrl: buildDocumentFileUrl(document.id),
-      signedBy: documentReviews.map((review) => review.reviewerEmail).join(', '),
-      signedAt: finalizedAt,
-      signMethod: documentReviews
-        .map((review) => review.signMethod)
-        .filter(Boolean)
-        .join(', '),
-      signatureImageUrl: lastSignedReview?.signatureImageUrl ?? null,
-      finalizedAt,
-    });
-
     await logEvent(env, {
       jobId: job.id,
       employeeId: job.employeeId,
@@ -104,16 +116,6 @@ export async function syncDocumentAndJobStatus(
       status: 'success',
       message: `${document.documentType} completed`,
     });
-  } else if (!allDocumentApproved && !anyDocumentRejected) {
-    const nextStatus = documentReviews.some((review) => review.status === 'approved')
-      ? 'partially_signed'
-      : 'awaiting_signatures';
-
-    if (document.status !== nextStatus) {
-      await updateGeneratedDocument(env, document.id, {
-        status: nextStatus,
-      });
-    }
   }
 
   const jobReviews = await repoListReviewRequests(env, { jobId });
@@ -143,16 +145,26 @@ export async function syncDocumentAndJobStatus(
   if (allJobApproved && job.status !== 'completed') {
     const finalizedAt = nowIso();
     const documents = await getGeneratedDocuments(env, { jobId });
-    const recipients = reviewsToWorkflowRecipients(
-      jobReviews.filter(
-        (review, index, current) =>
-          current.findIndex(
-            (candidate) =>
-              candidate.reviewerEmail === review.reviewerEmail &&
-              candidate.signerRole === review.signerRole,
-          ) === index,
+    const signerRecipients = dedupeRecipients(
+      reviewsToWorkflowRecipients(
+        jobReviews.map((review) => ({
+          reviewerEmail: review.reviewerEmail,
+          reviewerName: review.reviewerName,
+          signerRole: review.signerRole,
+          signOrder: review.signOrder,
+        })),
       ),
     );
+    const generatedRecipients = await resolveGeneratedDocumentRecipients(
+      env,
+      employee,
+      payload,
+      job.requestedByEmail ?? undefined,
+    );
+    const completionRecipients = dedupeRecipients([
+      ...signerRecipients,
+      ...generatedRecipients,
+    ]);
 
     await updateJob(env, job.id, {
       status: 'completed',
@@ -167,7 +179,7 @@ export async function syncDocumentAndJobStatus(
       actionName: job.actionName,
       eventType: 'job_completed',
       documents,
-      recipients,
+      recipients: completionRecipients,
       status: 'success',
       message: 'All signatures completed',
     });
@@ -175,7 +187,7 @@ export async function syncDocumentAndJobStatus(
     const notifications = buildCompletionNotifications({
       job,
       documents,
-      recipients,
+      recipients: completionRecipients,
       baseUrl: env.APP_BASE_URL,
     });
     await emitWorkflowNotifications(env, notifications);

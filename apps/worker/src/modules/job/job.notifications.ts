@@ -1,9 +1,7 @@
 import { logEvent } from '../audit/audit.service';
 import {
-  buildDocumentsGeneratedNotifications,
   buildReviewNotifications,
   emitWorkflowNotifications,
-  resolveGeneratedDocumentRecipients,
 } from '../workflow/workflow.service';
 import type { EnvWithBindings } from './job.types';
 import type {
@@ -13,6 +11,22 @@ import type {
   TriggerContext,
 } from './job.workflow';
 
+function getInitialReviewRequests(reviewRequests: ReviewRequestRecord[]) {
+  const minOrderByDocument = new Map<string, number>();
+
+  for (const reviewRequest of reviewRequests) {
+    const current = minOrderByDocument.get(reviewRequest.documentId);
+    if (current == null || reviewRequest.signOrder < current) {
+      minOrderByDocument.set(reviewRequest.documentId, reviewRequest.signOrder);
+    }
+  }
+
+  return reviewRequests.filter(
+    (reviewRequest) =>
+      minOrderByDocument.get(reviewRequest.documentId) === reviewRequest.signOrder,
+  );
+}
+
 export async function emitWorkflowGenerationNotifications(
   env: EnvWithBindings,
   context: TriggerContext,
@@ -21,20 +35,13 @@ export async function emitWorkflowGenerationNotifications(
   createdDocuments: GeneratedDocumentRecord[],
   createdReviewRequests: ReviewRequestRecord[],
 ) {
-  const generatedDocumentRecipients = await resolveGeneratedDocumentRecipients(
-    env,
-    context.employee,
-    context.actionPayload,
-    context.input.requestedByEmail,
-  );
-
   await logEvent(env, {
     jobId: job.id,
     employeeId: context.employee.id,
     actionName: context.action.actionName,
     eventType: 'documents_generated',
     documents: createdDocuments,
-    recipients: generatedDocumentRecipients,
+    recipients: context.workflowRecipients,
     status: 'success',
     message: `${createdDocuments.length} documents generated`,
   });
@@ -49,24 +56,17 @@ export async function emitWorkflowGenerationNotifications(
       documentId: reviewRequest.documentId,
       reviewerEmail: reviewRequest.reviewerEmail,
       signerRole: reviewRequest.signerRole,
+      signOrder: reviewRequest.signOrder,
     })),
     status: 'success',
     message: `${createdReviewRequests.length} review requests created`,
   });
 
-  const documentNotifications = buildDocumentsGeneratedNotifications({
-    job: activeJob ?? job,
-    employee: context.employee,
-    documents: createdDocuments,
-    recipients: generatedDocumentRecipients,
-    baseUrl: env.APP_BASE_URL,
-  });
-  await emitWorkflowNotifications(env, documentNotifications);
-
+  const initialReviewRequests = getInitialReviewRequests(createdReviewRequests);
   const notifications = buildReviewNotifications({
     job: activeJob ?? job,
     documents: createdDocuments,
-    reviewRequests: createdReviewRequests,
+    reviewRequests: initialReviewRequests,
     baseUrl: env.APP_BASE_URL,
   });
   await emitWorkflowNotifications(env, notifications);

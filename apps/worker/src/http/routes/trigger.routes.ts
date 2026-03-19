@@ -21,6 +21,26 @@ type TriggerRequestBody = {
 
 const triggerRoutes = new Hono<AppEnv>();
 
+const getInitialReviewRequests = <
+  T extends { documentId: string; signOrder: number },
+>(
+  reviewRequests: T[],
+) => {
+  const minOrderByDocument = new Map<string, number>();
+
+  for (const reviewRequest of reviewRequests) {
+    const current = minOrderByDocument.get(reviewRequest.documentId);
+    if (current == null || reviewRequest.signOrder < current) {
+      minOrderByDocument.set(reviewRequest.documentId, reviewRequest.signOrder);
+    }
+  }
+
+  return reviewRequests.filter(
+    (reviewRequest) =>
+      minOrderByDocument.get(reviewRequest.documentId) === reviewRequest.signOrder,
+  );
+};
+
 triggerRoutes.post('/trigger', async (c) => {
   const body = await c.req.json<TriggerRequestBody>();
   const employeeId = body.employeeId?.trim();
@@ -70,7 +90,7 @@ triggerRoutes.post('/trigger', async (c) => {
       estimatedCompletionMs: 8000,
       documents: snapshot?.documents ?? [],
       reviewRequests:
-        snapshot?.reviewRequests.map((reviewRequest) => ({
+        getInitialReviewRequests(snapshot?.reviewRequests ?? []).map((reviewRequest) => ({
           ...reviewRequest,
           reviewUrl: `/api/v1/reviews/${reviewRequest.reviewToken}`,
         })) ?? [],

@@ -1,5 +1,10 @@
 import { logEvent } from '../audit/audit.service';
+import { getGeneratedDocumentById } from '../document/document.service';
 import { getJobById as repoGetJobById } from '../job/job.repository';
+import {
+  buildReviewNotifications,
+  emitWorkflowNotifications,
+} from '../workflow/workflow.service';
 import {
   createReviewRequest as repoCreateReviewRequest,
   getReviewRequestByToken as repoGetReviewRequestByToken,
@@ -9,6 +14,104 @@ import {
 import { syncDocumentAndJobStatus } from './review.status';
 import type { EnvWithBindings } from './review.types';
 import { nowIso } from './review.utils';
+
+const isPendingReviewStatus = (status: string) =>
+  status === 'awaiting_review' || status === 'opened';
+
+async function assertReviewOrderReady(
+  env: EnvWithBindings,
+  review: { documentId: string; signOrder: number },
+) {
+  const documentReviews = await repoListReviewRequests(env, {
+    documentId: review.documentId,
+  });
+  const blockedByPriorSigner = documentReviews.some(
+    (candidate) =>
+      candidate.signOrder < review.signOrder && candidate.status !== 'approved',
+  );
+
+  if (blockedByPriorSigner) {
+    throw new Error('This review is waiting for an earlier signer');
+  }
+}
+
+async function notifyNextReviewers(
+  env: EnvWithBindings,
+  input: {
+    jobId: string;
+    documentId: string;
+    releasedBySignOrder: number;
+  },
+) {
+  const [job, document, documentReviews] = await Promise.all([
+    repoGetJobById(env, input.jobId),
+    getGeneratedDocumentById(env, input.documentId),
+    repoListReviewRequests(env, { documentId: input.documentId }),
+  ]);
+
+  if (!job || !document) {
+    return;
+  }
+
+  const waitingOnCurrentOrder = documentReviews.some(
+    (review) =>
+      review.signOrder === input.releasedBySignOrder &&
+      isPendingReviewStatus(review.status),
+  );
+
+  if (waitingOnCurrentOrder) {
+    return;
+  }
+
+  const nextSignOrder = documentReviews
+    .filter(
+      (review) =>
+        review.signOrder > input.releasedBySignOrder &&
+        isPendingReviewStatus(review.status),
+    )
+    .reduce<number | null>(
+      (current, review) =>
+        current == null || review.signOrder < current ? review.signOrder : current,
+      null,
+    );
+
+  if (nextSignOrder == null) {
+    return;
+  }
+
+  const nextReviewRequests = documentReviews.filter(
+    (review) =>
+      review.signOrder === nextSignOrder && isPendingReviewStatus(review.status),
+  );
+
+  if (nextReviewRequests.length === 0) {
+    return;
+  }
+
+  const notifications = buildReviewNotifications({
+    job,
+    documents: [document],
+    reviewRequests: nextReviewRequests,
+    baseUrl: env.APP_BASE_URL,
+  });
+
+  await emitWorkflowNotifications(env, notifications);
+
+  await logEvent(env, {
+    jobId: job.id,
+    employeeId: job.employeeId,
+    actionName: job.actionName,
+    eventType: 'review_requests_released',
+    eventPayload: nextReviewRequests.map((review) => ({
+      id: review.id,
+      reviewerEmail: review.reviewerEmail,
+      signOrder: review.signOrder,
+      documentId: review.documentId,
+    })),
+    status: 'success',
+    message: `Released sign order ${nextSignOrder} for ${document.documentType}`,
+  });
+}
 
 export const getReviewRequests = async (
   env: EnvWithBindings,
@@ -120,6 +223,8 @@ export const approveReviewRequest = async (
     throw new Error('Rejected review request cannot be approved');
   }
 
+  await assertReviewOrderReady(env, review);
+
   const approvedReview = await repoUpdateReviewRequest(env, review.id, {
     status: 'approved',
     reviewerName: input?.reviewerName ?? review.reviewerName,
@@ -147,6 +252,11 @@ export const approveReviewRequest = async (
   }
 
   await syncDocumentAndJobStatus(env, review.jobId, review.documentId);
+  await notifyNextReviewers(env, {
+    jobId: review.jobId,
+    documentId: review.documentId,
+    releasedBySignOrder: review.signOrder,
+  });
 
   return approvedReview;
 };
@@ -171,6 +281,8 @@ export const rejectReviewRequest = async (
   if (review.status === 'rejected') {
     return review;
   }
+
+  await assertReviewOrderReady(env, review);
 
   const rejectedReview = await repoUpdateReviewRequest(env, review.id, {
     status: 'rejected',

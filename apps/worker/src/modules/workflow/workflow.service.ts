@@ -1,4 +1,7 @@
-export { buildWorkflowDocumentHtml } from './workflow.documents';
+export {
+  buildWorkflowDocumentHtml,
+  buildWorkflowDocumentPdf,
+} from './workflow.documents';
 export {
   buildCompletionNotifications,
   buildDocumentsGeneratedNotifications,

@@ -35,7 +35,7 @@ documentsRoutes.get('/document-files/:documentId', async (c) => {
   return new Response(object.body, {
     headers: {
       'Content-Type':
-        object.httpMetadata?.contentType ?? 'text/html; charset=utf-8',
+        object.httpMetadata?.contentType ?? 'application/pdf',
       'Content-Disposition': `inline; filename="${document.fileName}"`,
     },
   });
