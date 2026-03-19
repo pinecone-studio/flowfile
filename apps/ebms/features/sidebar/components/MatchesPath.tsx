@@ -1,7 +1,7 @@
 export function matchesPath(pathname: string, href: string) {
-  if (href === '/employees') {
-    return pathname === '/' || pathname.startsWith('/employees');
+  if (href === '/dashboard') {
+    return pathname === '/' || pathname === '/dashboard';
   }
 
-  return pathname.startsWith(href);
+  return pathname === href || pathname.startsWith(`${href}/`);
 }

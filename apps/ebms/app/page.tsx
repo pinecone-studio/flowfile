@@ -1,5 +1,5 @@
-import EmployeePage from '../features/employees/EmployeePage';
+import DashboardPage from '../features/dashboard/DashboardPage';
 
 export default function Index() {
-  return <EmployeePage />;
+  return <DashboardPage />;
 }
