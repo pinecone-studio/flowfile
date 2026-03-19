@@ -1,11 +1,16 @@
-import { Search } from "lucide-react";
+import type { ChangeEventHandler } from 'react';
+import { Search } from 'lucide-react';
 
 export function SearchField({
   placeholder,
   className = '',
+  value,
+  onChange,
 }: {
   placeholder: string;
   className?: string;
+  value?: string;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
     <label
@@ -15,6 +20,8 @@ export function SearchField({
         aria-label={placeholder}
         className="w-full bg-transparent text-[17px] font-medium placeholder:text-[#b7c4dd] focus:outline-none"
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
       />
       <Search className="h-6 w-6 shrink-0 text-[#d0d8eb]" strokeWidth={2.1} />
     </label>

@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { yoga } from './graphql/server';
 import actionsRoutes from './http/routes/actions.routes';
 import auditRoutes from './http/routes/audit.routes';
@@ -13,6 +14,15 @@ import type { AppEnv } from './http/types';
 import employeeRoutes from './modules/employee/employee.routes';
 
 const app = new Hono<AppEnv>();
+
+app.use(
+  '*',
+  cors({
+    origin: '*',
+    allowHeaders: ['Content-Type'],
+    allowMethods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
+  }),
+);
 
 app.route('', healthRoutes);
 app.all('/graphql', async (c) => {
