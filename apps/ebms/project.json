@@ -23,6 +23,12 @@
     },
     "typecheck": {
       "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "target": "build",
+          "projects": "dependencies"
+        }
+      ],
       "options": {
         "command": "tsc -p apps/ebms/tsconfig.json --noEmit"
       }
