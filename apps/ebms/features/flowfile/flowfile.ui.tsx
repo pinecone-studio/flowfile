@@ -80,9 +80,13 @@ export function PageDivider() {
 export function SearchBar({
   placeholder,
   className,
+  value,
+  onChange,
 }: {
   placeholder: string;
   className?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 }) {
   return (
     <label
@@ -95,6 +99,8 @@ export function SearchBar({
         aria-label={placeholder}
         className="w-full bg-transparent text-[17px] font-medium placeholder:text-[#bfcce6] focus:outline-none"
         placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange?.(event.target.value)}
       />
       <Search className="h-6 w-6 shrink-0 text-[#d6dff2]" strokeWidth={2.1} />
     </label>
@@ -129,9 +135,13 @@ export function FilterChip({
 export function TabsRow({
   items,
   activeIndex = 0,
+  activeItem,
+  onChange,
 }: {
   items: string[];
   activeIndex?: number;
+  activeItem?: string;
+  onChange?: (item: string, index: number) => void;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-7 text-[16px] font-medium text-[#e4eaf8]">
@@ -139,9 +149,10 @@ export function TabsRow({
         <button
           key={item}
           type="button"
+          onClick={() => onChange?.(item, index)}
           className={cx(
             'rounded-[12px] px-4 py-3 transition',
-            index === activeIndex
+            activeItem ? activeItem === item : index === activeIndex
               ? 'bg-[#23478a] text-white shadow-[0_16px_28px_rgba(7,21,48,0.3)]'
               : 'text-[#e4eaf8]'
           )}
@@ -356,7 +367,9 @@ export function StatusText({
   value: string;
 }) {
   const className =
-    value === 'Generating...'
+    value === 'Generating...' ||
+    value === 'Awaiting Signatures' ||
+    value === 'Partially Signed'
       ? 'text-[#cbd2df]'
       : value === 'Failed'
         ? 'text-[#cbd2df]'
