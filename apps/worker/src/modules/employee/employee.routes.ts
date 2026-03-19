@@ -1,16 +1,12 @@
 import { Hono } from 'hono';
 import { EmployeeService } from './employee.service';
+import { requireAuth } from '../../http/middleware/require-auth';
+import type { AppEnv } from '../../http/types';
 
-type Env = {
-  Bindings: {
-    DB: D1Database;
-    DOCS_BUCKET: R2Bucket;
-    EPAS_WEBHOOK_URL?: string;
-  };
-};
-
-const employeeRoutes = new Hono<Env>();
+const employeeRoutes = new Hono<AppEnv>();
 const employeeService = new EmployeeService();
+
+employeeRoutes.use('*', requireAuth);
 
 employeeRoutes.get('/', async (c) => {
   const employees = await employeeService.listEmployees(c.env);
@@ -26,13 +22,6 @@ employeeRoutes.get('/:id', async (c) => {
   }
 
   return c.json(employee);
-});
-
-employeeRoutes.post('/', async (c) => {
-  const body = await c.req.json();
-  const employee = await employeeService.createEmployee(c.env, body);
-
-  return c.json(employee, 201);
 });
 
 employeeRoutes.post('/', async (c) => {
@@ -56,19 +45,6 @@ employeeRoutes.post('/', async (c) => {
     console.error('CREATE EMPLOYEE ERROR:', error);
     return c.json({ message: 'Failed to create employee' }, 500);
   }
-});
-
-employeeRoutes.patch('/:id', async (c) => {
-  const id = c.req.param('id');
-  const body = await c.req.json();
-
-  const employee = await employeeService.updateEmployee(c.env, id, body);
-
-  if (!employee) {
-    return c.json({ message: 'Employee not found' }, 404);
-  }
-
-  return c.json(employee);
 });
 
 employeeRoutes.patch('/:id', async (c) => {

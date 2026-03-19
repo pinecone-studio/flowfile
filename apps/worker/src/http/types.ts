@@ -9,5 +9,9 @@ export type AppEnv = {
     MAIL_FROM_EMAIL?: string;
     MAIL_FROM_NAME?: string;
     MAIL_REPLY_TO?: string;
+
+    CLERK_SECRET_KEY?: string;
+    CLERK_JWT_KEY?: string;
+    CLERK_AUTHORIZED_PARTIES?: string;
   };
 };

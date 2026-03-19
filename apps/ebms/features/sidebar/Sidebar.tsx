@@ -8,7 +8,7 @@ import {
   Logs,
   Users,
 } from 'lucide-react';
-import { sidebarUser } from '../flowfile/flowfile.data';
+import { UserButton, useUser } from '@clerk/nextjs';
 import { matchesPath } from './components/MatchesPath';
 import { NavButton, NavItem } from './components/NavButton';
 import FlowFileLogo from './components/FlowFileLogo';
@@ -45,9 +45,18 @@ const secondaryItems: NavItem[] = [
   },
 ];
 
-
 export function Sidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
+
+  const fullName =
+    user?.fullName ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+    'Authenticated User';
+
+  const email = user?.primaryEmailAddress?.emailAddress || 'No email available';
+
+  const avatar = user?.imageUrl || '/avatar.png';
 
   return (
     <aside className="w-full shrink-0 border-b border-white/5 bg-[linear-gradient(180deg,#122448_0%,#0d1c3c_52%,#081226_100%)] md:h-screen md:w-[269px] md:border-b-0 md:border-r md:border-r-white/5">
@@ -55,21 +64,29 @@ export function Sidebar() {
         <div className="flex items-center gap-3 px-2">
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-[12px]">
             <img
-              src={sidebarUser.avatar}
-              alt={sidebarUser.name}
+              src={avatar}
+              alt={fullName}
               className="h-full w-full object-cover"
             />
             <span className="absolute bottom-0 right-0 h-[10px] w-[10px] rounded-full border-2 border-[#102042] bg-[#26cd45]" />
           </div>
 
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-[16px] font-medium tracking-[-0.02em] text-white">
-              {sidebarUser.name}
+              {fullName}
             </p>
-            <p className="truncate text-[16px] leading-5 text-[#cfd8eb]">
-              {sidebarUser.email}
+            <p className="truncate text-[14px] leading-5 text-[#cfd8eb]">
+              {email}
             </p>
           </div>
+
+          <UserButton
+            appearance={{
+              elements: {
+                userButtonAvatarBox: 'h-9 w-9',
+              },
+            }}
+          />
         </div>
 
         <nav className="mt-12 flex flex-col gap-2">
