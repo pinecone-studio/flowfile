@@ -29,6 +29,11 @@ export default function PlaceholderPage({
             the employees, documents, and actions views. Hook your real data into
             this panel when the backend contract is finalized.
           </p>
+          <p className="mt-4 max-w-[660px] text-[17px] leading-8 text-[#d1dcee]">
+            The new visual shell is applied here so the route stays consistent with
+            the employees, documents, and actions views. Hook your real data into
+            this panel when the backend contract is finalized.
+          </p>
         </section>
 
         <section className="rounded-[28px] border border-[#26477e]/60 bg-[#162a53]/72 p-8 shadow-[0_24px_60px_rgba(4,10,25,0.3)] backdrop-blur-[18px]">
