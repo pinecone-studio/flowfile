@@ -142,7 +142,9 @@ export default function EmployeePage() {
       <div className="grid gap-8 md:grid-cols-2 2xl:grid-cols-4">
         {isLoading ? <LoadingState /> : null}
         {!isLoading && error ? <ErrorState message={error} /> : null}
-        {!isLoading && !error && filteredCards.length === 0 ? <EmptyState /> : null}
+        {!isLoading && !error && filteredCards.length === 0 ? (
+          <EmptyState />
+        ) : null}
         {!isLoading && !error
           ? filteredCards.map((record) => (
               <EmployeePreviewCard key={record.id} record={record} />
