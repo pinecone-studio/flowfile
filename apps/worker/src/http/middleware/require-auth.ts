@@ -7,7 +7,10 @@ type AuthUser = {
   sessionId?: string;
 };
 
-export async function requireAuth(c: Context<AppEnv>, next: Next) {
+export async function requireAuth(
+  c: Context<AppEnv>,
+  next: Next,
+): Promise<Response | void> {
   try {
     const authHeader = c.req.header('Authorization');
     const token = authHeader?.startsWith('Bearer ')
@@ -34,7 +37,9 @@ export async function requireAuth(c: Context<AppEnv>, next: Next) {
     };
 
     c.set('authUser', user);
+
     await next();
+    return;
   } catch (error) {
     console.error('AUTH ERROR:', error);
     return c.json({ message: 'Unauthorized' }, 401);
