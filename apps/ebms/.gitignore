@@ -3,3 +3,4 @@
 /.clerk/
 # OpenNext
 .open-next
+.env
