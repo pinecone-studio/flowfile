@@ -2,10 +2,11 @@
 
 import { usePathname } from 'next/navigation';
 import {
-  ClipboardCheck,
+  ChartColumn,
   FileText,
+  FilePenLine,
   LayoutGrid,
-  Logs,
+  SquarePen,
   Users,
 } from 'lucide-react';
 import { UserButton, useUser } from '@clerk/nextjs';
@@ -28,20 +29,19 @@ const primaryItems: NavItem[] = [
     href: '/documents',
     label: 'Documents',
     icon: FileText,
-    badge: '4',
-  },
+  }
 ];
 
 const secondaryItems: NavItem[] = [
   {
     href: '/audit-log',
     label: 'Audit Log',
-    icon: Logs,
+    icon: ChartColumn,
   },
   {
     href: '/approval',
     label: 'Approval',
-    icon: ClipboardCheck,
+    icon: SquarePen,
   },
 ];
 
@@ -55,9 +55,10 @@ export function Sidebar() {
     'Authenticated User';
 
   const email = user?.primaryEmailAddress?.emailAddress || 'No email available';
+
   return (
-    <aside className="w-full shrink-0 border-b border-white/5 bg-[linear-gradient(180deg,#122448_0%,#0d1c3c_52%,#081226_100%)] md:h-screen md:w-[269px] md:border-b-0 md:border-r md:border-r-white/5">
-      <div className="flex h-full flex-col px-4 pb-5 pt-5 md:px-4 md:pb-6 md:pt-6">
+    <aside className="h-screen w-[var(--app-sidebar-width)] min-w-[var(--app-sidebar-width)] max-w-[var(--app-sidebar-width)] shrink-0 overflow-y-auto border-r border-r-white/5 bg-[linear-gradient(180deg,#122448_0%,#0d1c3c_52%,#081226_100%)]">
+      <div className="flex h-full min-h-screen flex-col px-4 pb-6 pt-6">
         <div className="flex items-center gap-3 px-2">
           <div className="relative shrink-0">
             <UserButton
@@ -100,7 +101,7 @@ export function Sidebar() {
           ))}
         </nav>
 
-        <div className="mt-8 md:mt-auto">
+        <div className="mt-auto pt-8">
           <div className="flex items-center gap-3 px-3 py-2 text-[#cfd7eb]">
             <FlowFileLogo />
             <span className="text-[16px] font-medium tracking-[-0.02em]">

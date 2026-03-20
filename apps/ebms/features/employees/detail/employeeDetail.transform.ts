@@ -20,10 +20,21 @@ export type TriggerActionDefinition = {
   recipientRoles: string[];
 };
 
-const actionLabelMap: Record<string, string> = {
+const actionAliases: Record<string, string> = {
+  promote_employee: 'salary_increase',
+};
+
+const triggerActionLabelMap: Record<string, string> = {
   add_employee: 'Onboard',
   change_position: 'Change Role',
   salary_increase: 'Promote',
+  offboard_employee: 'Terminate',
+};
+
+const actionEventLabelMap: Record<string, string> = {
+  add_employee: 'Onboarding',
+  change_position: 'Role Change',
+  salary_increase: 'Promotion',
   offboard_employee: 'Terminate',
 };
 
@@ -35,6 +46,12 @@ const actionToneMap: Record<string, DetailActionItem['tone']> = {
 };
 
 const actionOrder = ['add_employee', 'change_position', 'salary_increase', 'offboard_employee'];
+
+function normalizeActionName(actionName: string) {
+  const normalized = actionName.trim();
+
+  return actionAliases[normalized] ?? normalized;
+}
 
 function safeParseFields(value: string) {
   try {
@@ -135,20 +152,47 @@ function toDisplayName(employee: ApiEmployee) {
 }
 
 export function toTriggerActions(actions: ApiAction[]) {
-  return actions
-    .filter((action) => action.isActive && actionLabelMap[action.actionName])
-    .sort(
-      (left, right) =>
-        actionOrder.indexOf(left.actionName) - actionOrder.indexOf(right.actionName),
-    )
-    .map((action) => ({
-      actionName: action.actionName,
-      label: actionLabelMap[action.actionName],
+  const dedupedActions = new Map<string, TriggerActionDefinition>();
+
+  for (const action of actions) {
+    if (!action.isActive) {
+      continue;
+    }
+
+    const canonicalActionName = normalizeActionName(action.actionName);
+    const label = triggerActionLabelMap[canonicalActionName];
+
+    if (!label) {
+      continue;
+    }
+
+    const nextAction = {
+      actionName: canonicalActionName,
+      label,
       fields: safeParseFields(action.triggerFieldsJson),
       phase: action.phase,
       documents: safeParseDocuments(action.documentsJson),
       recipientRoles: safeParseRecipients(action.recipientsJson),
-    })) satisfies TriggerActionDefinition[];
+    } satisfies TriggerActionDefinition;
+    const existingAction = dedupedActions.get(canonicalActionName);
+    const nextActionWeight =
+      nextAction.fields.length +
+      nextAction.documents.length +
+      nextAction.recipientRoles.length;
+    const existingActionWeight =
+      (existingAction?.fields.length ?? 0) +
+      (existingAction?.documents.length ?? 0) +
+      (existingAction?.recipientRoles.length ?? 0);
+
+    if (!existingAction || nextActionWeight >= existingActionWeight) {
+      dedupedActions.set(canonicalActionName, nextAction);
+    }
+  }
+
+  return [...dedupedActions.values()].sort(
+    (left, right) =>
+      actionOrder.indexOf(left.actionName) - actionOrder.indexOf(right.actionName),
+  );
 }
 
 export function toEmployeeProfile(
@@ -166,10 +210,12 @@ export function toEmployeeProfile(
         id: log.id,
         date: dateParts.date,
         year: dateParts.year,
-        label: actionLabelMap[log.actionName] ?? log.actionName,
+        label:
+          actionEventLabelMap[normalizeActionName(log.actionName)] ??
+          normalizeActionName(log.actionName),
         state: log.message ?? (log.status === 'success' ? 'Complete!' : 'In Progress'),
         width: log.status === 'error' ? '60%' : log.status === 'success' ? '78%' : '72%',
-        tone: actionToneMap[log.actionName] ?? 'onboarding',
+        tone: actionToneMap[normalizeActionName(log.actionName)] ?? 'onboarding',
       };
     });
   const documentItems: DetailDocumentItem[] = documents
@@ -186,6 +232,9 @@ export function toEmployeeProfile(
             : 'Generating...',
       date: formatDateTimeParts(document.createdAt).date,
     }));
+  const uniqueDocumentTitles = Array.from(
+    new Set(documentItems.map((item) => item.title).filter(Boolean)),
+  );
 
   return {
     id: employee.id,
@@ -211,7 +260,8 @@ export function toEmployeeProfile(
     contactInfo: [{ label: 'Email', value: employee.email || '-' }],
     timeline,
     documents: documentItems,
-    generateOptions: ['Select a document', ...(documentItems.map((item) => item.title))],
+    generateOptions:
+      uniqueDocumentTitles.length > 0 ? uniqueDocumentTitles : ['Select a document'],
   };
 }
 

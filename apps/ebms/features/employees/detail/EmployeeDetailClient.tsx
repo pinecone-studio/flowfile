@@ -6,11 +6,18 @@ import { useSearchParams } from 'next/navigation';
 import { DetailNoticeBanner } from './DetailNoticeBanner';
 import { triggerEmployeeAction } from './employeeDetail.api';
 import { EmployeeDetailPage } from './EmployeeDetailPage';
-import { toEmployeeProfile, toTriggerActions } from './employeeDetail.transform';
+import {
+  toEmployeeProfile,
+  toTriggerActions,
+} from './employeeDetail.transform';
 import type { TriggerActionDefinition } from './employeeDetail.transform';
 import { getEmployeeProfile } from './employeeProfile.data';
 import { TriggerActionDialog } from './TriggerActionDialog';
-import { fallbackTriggerActions, buildActionDraftValues, buildTriggerPayload } from './triggerAction.helpers';
+import {
+  fallbackTriggerActions,
+  buildActionDraftValues,
+  buildTriggerPayload,
+} from './triggerAction.helpers';
 import { useEmployeeDetail } from './useEmployeeDetail';
 
 type EmployeeDetailClientProps = {
@@ -38,9 +45,14 @@ function resolveDisplayProfile(
     ...fallbackProfile,
     ...liveProfile,
     image: liveProfile.image || fallbackProfile.image,
-    timeline: liveProfile.timeline.length > 0 ? liveProfile.timeline : fallbackProfile.timeline,
+    timeline:
+      liveProfile.timeline.length > 0
+        ? liveProfile.timeline
+        : fallbackProfile.timeline,
     documents:
-      liveProfile.documents.length > 0 ? liveProfile.documents : fallbackProfile.documents,
+      liveProfile.documents.length > 0
+        ? liveProfile.documents
+        : fallbackProfile.documents,
     generateOptions:
       liveProfile.documents.length > 0
         ? liveProfile.generateOptions
@@ -65,27 +77,51 @@ function buildTriggerNotice(
   result: Awaited<ReturnType<typeof triggerEmployeeAction>>,
 ) {
   const reviewerEmails = Array.from(
-    new Set(result.reviewRequests.map((reviewRequest) => reviewRequest.reviewerEmail)),
+    new Set(
+      result.reviewRequests.map((reviewRequest) => reviewRequest.reviewerEmail),
+    ),
+  );
+  const reviewLinks = Array.from(
+    new Set(
+      result.reviewRequests
+        .map((reviewRequest) => reviewRequest.reviewUrl)
+        .filter(Boolean),
+    ),
   );
   const reviewerSummary = formatEmailSummary(reviewerEmails);
+  const noticeLines = [
+    `${action.label} started. ${result.documentsQueued} document(s) queued.`,
+    reviewerSummary ? `Review request recipients: ${reviewerSummary}.` : null,
+    reviewLinks.length === 1 ? `Sign page link: ${reviewLinks[0]}` : null,
+    reviewLinks.length > 1
+      ? `Sign page links:\n${reviewLinks.join('\n')}`
+      : null,
+  ].filter((line): line is string => Boolean(line));
 
-  return reviewerSummary
-    ? `${action.label} started. ${result.documentsQueued} document(s) queued. Initial review requests were created for ${reviewerSummary}.`
-    : `${action.label} started. ${result.documentsQueued} document(s) queued.`;
+  return noticeLines.join('\n');
 }
 
-export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) {
+export function EmployeeDetailClient({
+  employeeId,
+}: EmployeeDetailClientProps) {
   const searchParams = useSearchParams();
   const { user } = useUser();
   const resolvedEmployeeId = employeeId ?? searchParams.get('employeeId') ?? '';
   const [refreshKey, setRefreshKey] = useState(0);
-  const [selectedAction, setSelectedAction] = useState<TriggerActionDefinition | null>(null);
+  const [selectedAction, setSelectedAction] =
+    useState<TriggerActionDefinition | null>(null);
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
-  const [notice, setNotice] = useState<{ tone: 'success' | 'error'; message: string } | null>(null);
+  const [notice, setNotice] = useState<{
+    tone: 'success' | 'error';
+    message: string;
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const detail = useEmployeeDetail(resolvedEmployeeId, refreshKey);
   const actions = useMemo(
-    () => (detail.actions.length > 0 ? toTriggerActions(detail.actions) : fallbackTriggerActions),
+    () =>
+      detail.actions.length > 0
+        ? toTriggerActions(detail.actions)
+        : fallbackTriggerActions,
     [detail.actions],
   );
   const profile = resolveDisplayProfile(resolvedEmployeeId, detail);
@@ -122,13 +158,26 @@ export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) 
       return;
     }
 
+    if (!detail.employee?.email?.trim()) {
+      setNotice({
+        tone: 'error',
+        message:
+          'This employee does not have an email yet. Add a valid employee email before generating documents if you want the notification to arrive in Gmail.',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const result = await triggerEmployeeAction({
         employeeId: resolvedEmployeeId,
         action: selectedAction.actionName,
-        payload: buildTriggerPayload(selectedAction, draftValues, detail.employee),
+        payload: buildTriggerPayload(
+          selectedAction,
+          draftValues,
+          detail.employee,
+        ),
         requestedByEmail: requesterEmail ?? undefined,
       });
 
@@ -142,7 +191,9 @@ export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) 
       setNotice({
         tone: 'error',
         message:
-          error instanceof Error ? error.message : 'Failed to trigger employee action.',
+          error instanceof Error
+            ? error.message
+            : 'Failed to trigger employee action.',
       });
     } finally {
       setIsSubmitting(false);
@@ -152,7 +203,9 @@ export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) 
   return (
     <>
       <section className="space-y-6">
-        {notice ? <DetailNoticeBanner tone={notice.tone} message={notice.message} /> : null}
+        {notice ? (
+          <DetailNoticeBanner tone={notice.tone} message={notice.message} />
+        ) : null}
         {detail.error ? (
           <DetailNoticeBanner tone="error" message={detail.error} />
         ) : null}
@@ -160,7 +213,9 @@ export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) 
           profile={profile}
           actions={actions}
           disabled={detail.loading || isSubmitting}
-          pendingActionName={isSubmitting ? selectedAction?.actionName ?? null : null}
+          pendingActionName={
+            isSubmitting ? (selectedAction?.actionName ?? null) : null
+          }
           onActionSelect={handleActionSelect}
         />
       </section>

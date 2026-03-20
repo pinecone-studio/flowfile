@@ -6,6 +6,12 @@ export type EnvWithDb = {
   BREVO_API_KEY?: string;
   BREVO_FROM_EMAIL?: string;
   BREVO_FROM_NAME?: string;
+  EMAIL_WEBHOOK_URL?: string;
+  MAILCHANNELS_API_URL?: string;
+  MAILCHANNELS_API_KEY?: string;
+  MAIL_FROM_EMAIL?: string;
+  MAIL_FROM_NAME?: string;
+  MAIL_REPLY_TO?: string;
 };
 
 export type EmployeeLike = {
@@ -17,7 +23,9 @@ export type EmployeeLike = {
   branch: string | null;
 };
 
-export type RecipientRecord = Awaited<ReturnType<typeof getAllRecipients>>[number];
+export type RecipientRecord = Awaited<
+  ReturnType<typeof getAllRecipients>
+>[number];
 
 export type WorkflowPayload = Record<string, unknown>;
 
@@ -66,4 +74,13 @@ export type WorkflowNotification = {
   text: string;
   html: string;
   metadata?: Record<string, unknown>;
+};
+
+export type WorkflowNotificationDelivery = {
+  type: WorkflowNotification['type'];
+  to: string;
+  subject: string;
+  status: 'sent' | 'not_configured' | 'failed';
+  provider?: 'brevo' | 'mailchannels';
+  errorMessage?: string;
 };

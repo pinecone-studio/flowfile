@@ -55,7 +55,7 @@ export function buildGroupItem(
       { key: 'retry', label: 'Retry Generation', disabled: !canRetry },
       { key: 'cancel', label: 'Cancel Generation', disabled: !canCancel },
     ],
-    downloadUrl: `/api/v1/document-files/${document.id}`,
+    downloadUrl: `/api/v1/document-previews/${document.id}`,
     signToken: pending.signToken,
     errorMessage,
     rawStatus: document.status,

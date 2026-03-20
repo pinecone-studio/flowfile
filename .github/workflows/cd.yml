@@ -134,6 +134,7 @@ jobs:
           CLERK_JWT_KEY: ${{ secrets.CLERK_JWT_KEY }}
           CLERK_AUTHORIZED_PARTIES: ${{ secrets.CLERK_AUTHORIZED_PARTIES }}
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          MAILCHANNELS_API_KEY: ${{ secrets.MAILCHANNELS_API_KEY }}
         run: |
           if [ -n "$CLERK_SECRET_KEY" ]; then
             printf '%s' "$CLERK_SECRET_KEY" | npx wrangler secret put CLERK_SECRET_KEY --config apps/worker/wrangler.jsonc
@@ -150,6 +151,25 @@ jobs:
           if [ -n "$BREVO_API_KEY" ]; then
             printf '%s' "$BREVO_API_KEY" | npx wrangler secret put BREVO_API_KEY --config apps/worker/wrangler.jsonc
           fi
+
+          if [ -n "$MAILCHANNELS_API_KEY" ]; then
+            printf '%s' "$MAILCHANNELS_API_KEY" | npx wrangler secret put MAILCHANNELS_API_KEY --config apps/worker/wrangler.jsonc
+          fi
+
+      - name: Apply worker database migrations
+        run: npx wrangler d1 migrations apply epas-db --remote --config apps/worker/wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Sync workflow registry and templates
+        run: |
+          npx wrangler d1 execute epas-db --remote --config apps/worker/wrangler.jsonc --file apps/worker/seeds/0001_action_registry.sql
+          npx wrangler d1 execute epas-db --remote --config apps/worker/wrangler.jsonc --file apps/worker/seeds/0002_recipients.sql
+          npx wrangler d1 execute epas-db --remote --config apps/worker/wrangler.jsonc --file apps/worker/seeds/0003_templates.sql
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Deploy worker with Wrangler
         run: npx wrangler deploy --config apps/worker/wrangler.jsonc

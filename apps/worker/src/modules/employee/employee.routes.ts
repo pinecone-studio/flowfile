@@ -72,6 +72,13 @@ employeeRoutes.patch('/:id', async (c) => {
 function validateCreateEmployeeInput(body: any) {
   if (!body.firstName) return 'firstName is required';
   if (!body.lastName) return 'lastName is required';
+  if (!body.email) return 'email is required';
+  if (
+    typeof body.email !== 'string' ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim())
+  ) {
+    return 'email must be a valid email address';
+  }
   if (!body.status) return 'status is required';
   if (!body.employeeCode) return 'employeeCode is required';
   return null;

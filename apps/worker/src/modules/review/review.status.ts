@@ -7,7 +7,7 @@ import {
 } from '../document/document.service';
 import { getEmployeeById } from '../employee/employee.service';
 import { getJobById as repoGetJobById, updateJob } from '../job/job.repository';
-import { getTemplateByName } from '../templates/templates.service';
+import { requireTemplateByName } from '../templates/templates.service';
 import {
   buildCompletionNotifications,
   buildDocumentFileUrl,
@@ -66,7 +66,7 @@ export async function syncDocumentAndJobStatus(
         ? 'partially_signed'
         : 'awaiting_signatures';
   const workflowRecipients = reviewsToWorkflowRecipients(documentReviews);
-  const template = await getTemplateByName(env, document.templateName);
+  const template = await requireTemplateByName(env, document.templateName);
   const approvalSummary = documentReviews.map((review) => ({
     reviewerEmail: review.reviewerEmail,
     reviewerName: review.reviewerName,
@@ -80,7 +80,8 @@ export async function syncDocumentAndJobStatus(
     payload,
     recipients: workflowRecipients,
     status: documentStatus,
-    templateHtml: template?.htmlContent ?? null,
+    templateName: template.name,
+    templateHtml: template.htmlContent,
     approvalSummary,
   });
   const approvedReviews = documentReviews.filter(

@@ -18,10 +18,10 @@ INSERT OR REPLACE INTO action_registry (
   '["status","hireDate"]',
   'status === ACTIVE && isNewRecord',
   '[
-    {"id":"employment_contract","template":"employment_contract.docx","order":1},
-    {"id":"probation_order","template":"probation_order.docx","order":2},
-    {"id":"job_description","template":"job_description.docx","order":3},
-    {"id":"nda","template":"nda.docx","order":4}
+    {"id":"employment_contract","template":"employmentContract.html","order":1},
+    {"id":"probation_order","template":"probationOrder.html","order":2},
+    {"id":"job_description","template":"jobDescription.html","order":3},
+    {"id":"nda","template":"nda.html","order":4}
   ]',
   '["hr_team","department_chief","branch_manager"]',
   1,
@@ -34,7 +34,7 @@ INSERT OR REPLACE INTO action_registry (
   '["level","numberOfVacationDays","isSalaryCompany"]',
   NULL,
   '[
-    {"id":"salary_increase_order","template":"salary_increase_order.docx","order":1}
+    {"id":"salary_increase_order","template":"salaryIncreaseOrder.html","order":1}
   ]',
   '["hr_team","department_chief"]',
   1,
@@ -47,9 +47,9 @@ INSERT OR REPLACE INTO action_registry (
   '["department","branch","level"]',
   NULL,
   '[
-    {"id":"job_description","template":"job_description.docx","order":1},
-    {"id":"position_update_order","template":"position_update_order.docx","order":2},
-    {"id":"contract_addendum","template":"contract_addendum.docx","order":3}
+    {"id":"job_description","template":"jobDescription.html","order":1},
+    {"id":"position_update_order","template":"positionUpdateOrder.html","order":2},
+    {"id":"contract_addendum","template":"contractAddendum.html","order":3}
   ]',
   '["hr_team","department_chief","branch_manager"]',
   1,
@@ -62,8 +62,8 @@ INSERT OR REPLACE INTO action_registry (
   '["terminationDate","status"]',
   NULL,
   '[
-    {"id":"termination_order","template":"termination_order.docx","order":1},
-    {"id":"handover_sheet","template":"handover_sheet.docx","order":2}
+    {"id":"termination_order","template":"terminationOrder.html","order":1},
+    {"id":"handover_sheet","template":"handoverSheet.html","order":2}
   ]',
   '["hr_team","department_chief","ceo"]',
   1,

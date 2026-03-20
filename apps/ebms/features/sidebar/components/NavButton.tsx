@@ -13,13 +13,11 @@ export interface NavItem {
 export function NavButton({ item }: { item: NavItem }) {
   const Icon = item.icon;
   const badgeClass =
-    item.badge === '4'
-      ? 'rounded-[10px] bg-[#2870f0] px-[11px] py-[3px] text-[14px]'
-      : item.badge?.includes('Waiting')
-        ? 'rounded-[10px] bg-[#2870f0] px-[11px] py-[5px] text-[12px]'
-        : item.badge?.includes('New Actions')
-          ? 'rounded-[10px] bg-[#2870f0] px-[10px] py-[5px] text-[12px]'
-          : 'rounded-[10px] bg-[#22478a] px-2 py-1 text-[14px]';
+    item.badge?.includes('Waiting')
+      ? 'rounded-[10px] bg-[#2870f0] px-[11px] py-[5px] text-[12px]'
+      : item.badge?.includes('New Actions')
+        ? 'rounded-[10px] bg-[#2870f0] px-[10px] py-[5px] text-[12px]'
+        : 'rounded-[10px] bg-[#22478a] px-2 py-1 text-[14px]';
 
   return (
     <Link

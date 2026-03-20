@@ -57,54 +57,64 @@ triggerRoutes.post('/trigger', async (c) => {
     );
   }
 
-  const job = await triggerAction(c.env, {
-    employeeId,
-    actionName,
-    triggerSource: 'manual_api',
-    dryRun: Boolean(body.dryRun),
-    actionPayload: body.payload,
-    requestedByEmail:
-      typeof body.requestedByEmail === 'string'
-        ? body.requestedByEmail.trim()
+  try {
+    const job = await triggerAction(c.env, {
+      employeeId,
+      actionName,
+      triggerSource: 'manual_api',
+      dryRun: Boolean(body.dryRun),
+      actionPayload: body.payload,
+      requestedByEmail:
+        typeof body.requestedByEmail === 'string'
+          ? body.requestedByEmail.trim()
+          : undefined,
+      overrideRecipients: Array.isArray(body.overrideRecipients)
+        ? body.overrideRecipients
+            .filter(
+              (recipient) =>
+                recipient &&
+                typeof recipient.email === 'string' &&
+                recipient.email.trim(),
+            )
+            .map((recipient) => ({
+              email: recipient.email.trim(),
+              name: recipient.name?.trim(),
+              role: recipient.role?.trim(),
+              signOrder: recipient.signOrder,
+            }))
         : undefined,
-    overrideRecipients: Array.isArray(body.overrideRecipients)
-      ? body.overrideRecipients
-          .filter(
-            (recipient) =>
-              recipient &&
-              typeof recipient.email === 'string' &&
-              recipient.email.trim(),
-          )
-          .map((recipient) => ({
-            email: recipient.email.trim(),
-            name: recipient.name?.trim(),
-            role: recipient.role?.trim(),
-            signOrder: recipient.signOrder,
-          }))
-      : undefined,
-  });
-  const snapshot = job?.id ? await getWorkflowSnapshot(c.env, job.id) : null;
+    });
+    const snapshot = job?.id ? await getWorkflowSnapshot(c.env, job.id) : null;
 
-  return c.json(
-    {
-      jobId: job?.id,
-      action: actionName,
-      status: job?.status ?? 'accepted',
-      documentsQueued: job?.documentsExpected ?? 0,
-      estimatedCompletionMs: 8000,
-      documents: snapshot?.documents ?? [],
-      reviewRequests:
-        getInitialReviewRequests(snapshot?.reviewRequests ?? []).map((reviewRequest) => ({
-          ...reviewRequest,
-          reviewUrl:
-            buildAbsoluteUrl(
-              c.env.APP_BASE_URL,
-              buildReviewUrl(reviewRequest.reviewToken),
-            ) ?? buildReviewUrl(reviewRequest.reviewToken),
-        })) ?? [],
-    },
-    202,
-  );
+    return c.json(
+      {
+        jobId: job?.id,
+        action: actionName,
+        status: job?.status ?? 'accepted',
+        documentsQueued: job?.documentsExpected ?? 0,
+        estimatedCompletionMs: 8000,
+        documents: snapshot?.documents ?? [],
+        reviewRequests:
+          getInitialReviewRequests(snapshot?.reviewRequests ?? []).map((reviewRequest) => ({
+            ...reviewRequest,
+            reviewUrl:
+              buildAbsoluteUrl(
+                c.env.APP_BASE_URL,
+                buildReviewUrl(reviewRequest.reviewToken),
+              ) ?? buildReviewUrl(reviewRequest.reviewToken),
+          })) ?? [],
+      },
+      202,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        message:
+          error instanceof Error ? error.message : 'Failed to trigger workflow',
+      },
+      500,
+    );
+  }
 });
 
 export default triggerRoutes;

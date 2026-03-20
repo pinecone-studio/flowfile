@@ -51,7 +51,9 @@ export const buildReviewNotifications = (input: {
       buildReviewUrl(reviewRequest.reviewToken),
     );
     const documentUrl = buildAbsoluteUrl(input.apiBaseUrl, document?.fileUrl ?? null);
-    const intro = `${reviewRequest.reviewerName ?? reviewRequest.reviewerEmail}, please review and sign ${
+    const intro = `${
+      reviewRequest.reviewerName ?? reviewRequest.reviewerEmail
+    }, please use the secure sign page below to review and sign ${
       document?.fileName ?? 'the requested document'
     }.`;
     const paragraphs = [
@@ -60,7 +62,7 @@ export const buildReviewNotifications = (input: {
       `Role: ${titleCaseRole(reviewRequest.signerRole)}`,
     ];
     const links = [
-      reviewUrl ? { label: 'Open review request', url: reviewUrl } : null,
+      reviewUrl ? { label: 'Open sign page', url: reviewUrl } : null,
       documentUrl ? { label: 'Open current document', url: documentUrl } : null,
     ].filter((link): link is { label: string; url: string } => Boolean(link));
 
@@ -74,7 +76,7 @@ export const buildReviewNotifications = (input: {
         links,
       }),
       html: renderNotificationHtml({
-        title: 'Signature Requested',
+        title: 'Sign Document',
         intro,
         paragraphs,
         links,

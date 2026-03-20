@@ -14,7 +14,7 @@ export function DetailNoticeBanner({
 }: DetailNoticeBannerProps) {
   return (
     <div
-      className={`rounded-[18px] border px-5 py-4 text-[15px] font-medium shadow-[0_18px_48px_rgba(4,9,22,0.16)] ${toneClassNames[tone]}`}
+      className={`whitespace-pre-line rounded-[18px] border px-5 py-4 text-[15px] font-medium shadow-[0_18px_48px_rgba(4,9,22,0.16)] ${toneClassNames[tone]}`}
     >
       {message}
     </div>

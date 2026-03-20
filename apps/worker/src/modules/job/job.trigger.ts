@@ -20,6 +20,25 @@ import {
   type TriggerContext,
 } from './job.workflow';
 
+function resolveEmployeeWorkflowEmail(
+  employee: { email?: string | null },
+  payload: Record<string, unknown>,
+) {
+  const employeeEmail = employee.email?.trim();
+
+  if (employeeEmail) {
+    return employeeEmail;
+  }
+
+  const payloadEmail = payload.employeeEmail;
+
+  if (typeof payloadEmail === 'string' && payloadEmail.trim()) {
+    return payloadEmail.trim();
+  }
+
+  return null;
+}
+
 async function resolveTriggerContext(
   env: EnvWithBindings,
   input: TriggerActionInput,
@@ -34,6 +53,10 @@ async function resolveTriggerContext(
   const documents = parseDocuments(action);
   const recipientRoleKeys = parseRecipients(action);
   const actionPayload = parseWorkflowPayload(input.actionPayload);
+  const employeeWorkflowEmail = resolveEmployeeWorkflowEmail(
+    employee,
+    actionPayload,
+  );
   const workflowRecipients = await resolveWorkflowRecipients(
     env,
     employee,
@@ -42,6 +65,12 @@ async function resolveTriggerContext(
     input.requestedByEmail,
     input.overrideRecipients,
   );
+
+  if (!input.dryRun && !employeeWorkflowEmail) {
+    throw new Error(
+      'Employee email is missing. Update the employee record with a valid email before generating documents.',
+    );
+  }
 
   if (!input.dryRun && workflowRecipients.length === 0) {
     throw new Error('No signer recipients could be resolved for this workflow');
