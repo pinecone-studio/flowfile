@@ -1,3 +1,4 @@
+import { resolveImageSrc } from '../../lib/assets/resolveImageSrc';
 import type {
   ApiAuditLog,
   ApiEmployee,
@@ -89,7 +90,7 @@ export function buildAllGroups(input: {
         employeeId: employee.id,
         employeeName: formatShortName(employee),
         employeeCode: employee.employeeCode,
-        employeeAvatar: employee.imageUrl,
+        employeeAvatar: resolveImageSrc(employee.imageUrl, '/image%205.svg'),
         date: formatDateTime(job.createdAt),
         latestAction: actionLabels[categoryKey],
         state: mapJobState(job),

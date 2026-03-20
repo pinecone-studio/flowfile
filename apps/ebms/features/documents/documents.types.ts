@@ -23,6 +23,9 @@ export type DocumentRecipient = {
   id: string;
   name: string;
   initials: string;
+  role: string;
+  status: 'signed' | 'waiting' | 'rejected';
+  approvedAt: string | null;
 };
 
 export type DocumentsPageItem = {

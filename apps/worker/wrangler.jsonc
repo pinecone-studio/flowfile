@@ -4,7 +4,8 @@
   "main": "src/index.ts",
 
   "vars": {
-    "APP_BASE_URL": "https://team4-epas-worker.zz7.workers.dev/",
+    "APP_BASE_URL": "https://ebms.zz7.workers.dev/",
+    "API_BASE_URL": "https://team4-epas-worker.zz7.workers.dev/",
     "EPAS_WEBHOOK_URL": "http://127.0.0.1:8787/epas/events",
     // Optional email delivery settings:
    

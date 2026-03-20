@@ -14,6 +14,20 @@ type EmployeeEventBody = {
   employee?: {
     status?: string;
     terminationDate?: string | null;
+    department?: string | null;
+    branch?: string | null;
+    level?: string | null;
+    numberOfVacationDays?: number | null;
+    isSalaryCompany?: boolean;
+  };
+  previousEmployee?: {
+    status?: string;
+    terminationDate?: string | null;
+    department?: string | null;
+    branch?: string | null;
+    level?: string | null;
+    numberOfVacationDays?: number | null;
+    isSalaryCompany?: boolean;
   };
 };
 
@@ -22,6 +36,69 @@ const webhooksRoutes = new Hono<AppEnv>();
 const normalizeActionName = (value?: string) => value?.trim() ?? '';
 
 const unique = <T,>(values: T[]) => Array.from(new Set(values));
+
+const levelOrder: Record<string, number> = {
+  intern: 0,
+  junior: 1,
+  mid: 2,
+  senior: 3,
+  lead: 4,
+  manager: 5,
+  director: 6,
+  head: 7,
+  vp: 8,
+  cxo: 9,
+  ceo: 10,
+};
+
+function normalizeLevelValue(value?: string | null) {
+  return value?.trim().toLowerCase() ?? '';
+}
+
+function getLevelRank(value?: string | null) {
+  const normalized = normalizeLevelValue(value);
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized in levelOrder) {
+    return levelOrder[normalized];
+  }
+
+  const numericMatch = normalized.match(/\d+/);
+
+  if (numericMatch) {
+    return Number(numericMatch[0]);
+  }
+
+  return null;
+}
+
+function hasValueChanged<T>(previousValue: T | undefined, nextValue: T | undefined) {
+  return previousValue !== nextValue;
+}
+
+function inferLevelAction(body: EmployeeEventBody) {
+  const previousLevel = body.previousEmployee?.level;
+  const nextLevel = body.employee?.level;
+  const previousRank = getLevelRank(previousLevel);
+  const nextRank = getLevelRank(nextLevel);
+
+  if (previousRank != null && nextRank != null) {
+    return nextRank > previousRank ? 'promote_employee' : 'change_position';
+  }
+
+  if (
+    previousLevel != null &&
+    nextLevel != null &&
+    normalizeLevelValue(previousLevel) !== normalizeLevelValue(nextLevel)
+  ) {
+    return 'change_position';
+  }
+
+  return null;
+}
 
 const inferActionNamesFromEvent = async (
   env: AppEnv['Bindings'],
@@ -40,35 +117,73 @@ const inferActionNamesFromEvent = async (
     actionNames.add('add_employee');
   }
 
-  if (
-    changedFields.some((field) =>
-      ['department', 'branch', 'level'].includes(field),
-    )
-  ) {
+  if (changedFields.includes('department')) {
     actionNames.add('change_position');
   }
 
+  if (changedFields.includes('branch')) {
+    actionNames.add('change_position');
+  }
+
+  if (changedFields.includes('level')) {
+    const levelAction = inferLevelAction(body);
+
+    if (levelAction) {
+      actionNames.add(levelAction);
+    }
+  }
+
   if (
-    changedFields.some((field) =>
-      ['salary', 'salaryAmount', 'salaryGrade', 'isSalaryCompany', 'numberOfVacationDays'].includes(
-        field,
-      ),
+    changedFields.includes('numberOfVacationDays') &&
+    hasValueChanged(
+      body.previousEmployee?.numberOfVacationDays,
+      body.employee?.numberOfVacationDays,
     )
   ) {
-    actionNames.add('salary_increase');
+    actionNames.add('promote_employee');
+  }
+
+  if (
+    changedFields.includes('isSalaryCompany') &&
+    hasValueChanged(
+      body.previousEmployee?.isSalaryCompany,
+      body.employee?.isSalaryCompany,
+    )
+  ) {
+    actionNames.add('promote_employee');
   }
 
   const employeeStatus = body.employee?.status?.toUpperCase();
+  const previousTerminationDate = body.previousEmployee?.terminationDate ?? null;
+  const nextTerminationDate = body.employee?.terminationDate ?? null;
   if (
-    changedFields.includes('terminationDate') ||
-    changedFields.includes('status') ||
-    employeeStatus === 'TERMINATED'
+    (changedFields.includes('terminationDate') &&
+      previousTerminationDate == null &&
+      nextTerminationDate != null) ||
+    (changedFields.includes('status') &&
+      (employeeStatus === 'TERMINATED' || employeeStatus === 'INACTIVE'))
   ) {
     actionNames.add('offboard_employee');
   }
 
   if (actionNames.size > 0) {
     return [...actionNames];
+  }
+
+  const mappedFields = new Set([
+    'department',
+    'branch',
+    'level',
+    'numberOfVacationDays',
+    'isSalaryCompany',
+    'terminationDate',
+    'status',
+  ]);
+  const hasOnlyMappedFields =
+    changedFields.length > 0 && changedFields.every((field) => mappedFields.has(field));
+
+  if (hasOnlyMappedFields) {
+    return [];
   }
 
   const allActions = await getAllActions(env);

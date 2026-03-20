@@ -48,7 +48,7 @@ export function buildGroupItem(
     pendingTone: pending.pendingTone,
     recipients: buildRecipients(reviews),
     menuActions: [
-      { key: 'download', label: 'Download PDF', disabled: !isDownloadable },
+      { key: 'download', label: 'Preview Contract', disabled: !isDownloadable },
       { key: 'sign', label: 'Sign / Approve', disabled: !pending.signToken },
       { key: 'audit', label: 'View Audit / History' },
       { key: 'error', label: 'View Error', disabled: !errorMessage },

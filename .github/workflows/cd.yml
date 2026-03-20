@@ -116,6 +116,41 @@ jobs:
             exit 1
           }
 
+      - name: Validate worker auth secrets
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_JWT_KEY: ${{ secrets.CLERK_JWT_KEY }}
+        run: |
+          if [ -z "$CLERK_SECRET_KEY" ] && [ -z "$CLERK_JWT_KEY" ]; then
+            echo "::error::Missing GitHub Actions secret CLERK_SECRET_KEY or CLERK_JWT_KEY for worker auth"
+            exit 1
+          fi
+
+      - name: Sync worker runtime secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_JWT_KEY: ${{ secrets.CLERK_JWT_KEY }}
+          CLERK_AUTHORIZED_PARTIES: ${{ secrets.CLERK_AUTHORIZED_PARTIES }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+        run: |
+          if [ -n "$CLERK_SECRET_KEY" ]; then
+            printf '%s' "$CLERK_SECRET_KEY" | npx wrangler secret put CLERK_SECRET_KEY --config apps/worker/wrangler.jsonc
+          fi
+
+          if [ -n "$CLERK_JWT_KEY" ]; then
+            printf '%s' "$CLERK_JWT_KEY" | npx wrangler secret put CLERK_JWT_KEY --config apps/worker/wrangler.jsonc
+          fi
+
+          if [ -n "$CLERK_AUTHORIZED_PARTIES" ]; then
+            printf '%s' "$CLERK_AUTHORIZED_PARTIES" | npx wrangler secret put CLERK_AUTHORIZED_PARTIES --config apps/worker/wrangler.jsonc
+          fi
+
+          if [ -n "$BREVO_API_KEY" ]; then
+            printf '%s' "$BREVO_API_KEY" | npx wrangler secret put BREVO_API_KEY --config apps/worker/wrangler.jsonc
+          fi
+
       - name: Deploy worker with Wrangler
         run: npx wrangler deploy --config apps/worker/wrangler.jsonc
         env:

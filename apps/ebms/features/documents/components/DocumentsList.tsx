@@ -48,7 +48,7 @@ export function DocumentsList({
                   {group.items.map((item) => (
                     <div
                       key={item.id}
-                      className="grid min-h-[48px] grid-cols-[minmax(0,1.45fr)_minmax(0,0.9fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_36px] items-center gap-5"
+                      className="grid min-h-[48px] grid-cols-[minmax(0,1.25fr)_minmax(0,0.85fr)_minmax(0,0.95fr)_minmax(0,1.55fr)_36px] items-center gap-5"
                     >
                       <span className="truncate text-[18px] font-medium text-[#f3f7ff]">{item.title}</span>
                       <div className="flex min-h-[48px] flex-col justify-center">
@@ -56,8 +56,8 @@ export function DocumentsList({
                         <span className="text-[16px] leading-4 text-[#a0b0d3]">{item.timestamp}</span>
                       </div>
                       <StatusDotLabel label={item.pendingLabel} tone={item.pendingTone} />
-                      <div className="flex items-center gap-3">
-                        <span className="text-[16px] text-[#eef4ff]">Sent to</span>
+                      <div className="flex items-start gap-3">
+                        <span className="pt-1 text-[16px] text-[#eef4ff]">Signers</span>
                         <DocumentRecipients recipients={item.recipients} />
                       </div>
                       <DocumentActionsMenu

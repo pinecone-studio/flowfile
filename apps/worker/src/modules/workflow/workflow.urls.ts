@@ -20,7 +20,8 @@ export function buildAbsoluteUrl(baseUrl: string | undefined, path: string | nul
   return new URL(path, `${normalizedBaseUrl}/`).toString();
 }
 
-export const buildReviewUrl = (token: string) => `/api/v1/reviews/${token}`;
+export const buildReviewUrl = (token: string) =>
+  `/sign?token=${encodeURIComponent(token)}`;
 
 export const buildDocumentFileUrl = (documentId: string) =>
   `/api/v1/document-files/${documentId}`;

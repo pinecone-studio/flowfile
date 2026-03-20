@@ -1,5 +1,9 @@
 import { Hono } from 'hono';
 import { getWorkflowSnapshot, triggerAction } from '../../modules/job/job.service';
+import {
+  buildAbsoluteUrl,
+  buildReviewUrl,
+} from '../../modules/workflow/workflow.urls';
 import type { AppEnv } from '../types';
 
 type TriggerRecipientBody = {
@@ -92,7 +96,11 @@ triggerRoutes.post('/trigger', async (c) => {
       reviewRequests:
         getInitialReviewRequests(snapshot?.reviewRequests ?? []).map((reviewRequest) => ({
           ...reviewRequest,
-          reviewUrl: `/api/v1/reviews/${reviewRequest.reviewToken}`,
+          reviewUrl:
+            buildAbsoluteUrl(
+              c.env.APP_BASE_URL,
+              buildReviewUrl(reviewRequest.reviewToken),
+            ) ?? buildReviewUrl(reviewRequest.reviewToken),
         })) ?? [],
     },
     202,

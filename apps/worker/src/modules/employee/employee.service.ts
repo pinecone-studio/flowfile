@@ -47,6 +47,15 @@ export class EmployeeService {
         changedFields: ['status', 'hireDate'],
         timestamp: now,
         isNewRecord: true,
+        employee: {
+          status: employee.status,
+          terminationDate: employee.terminationDate ?? null,
+          department: employee.department ?? null,
+          branch: employee.branch ?? null,
+          level: employee.level ?? null,
+          numberOfVacationDays: employee.numberOfVacationDays ?? null,
+          isSalaryCompany: employee.isSalaryCompany,
+        },
       });
     }
 
@@ -83,6 +92,25 @@ export class EmployeeService {
       employeeId: id,
       changedFields,
       timestamp: new Date().toISOString(),
+      previousEmployee: {
+        status: existing.status,
+        terminationDate: existing.terminationDate ?? null,
+        department: existing.department ?? null,
+        branch: existing.branch ?? null,
+        level: existing.level ?? null,
+        numberOfVacationDays: existing.numberOfVacationDays ?? null,
+        isSalaryCompany: existing.isSalaryCompany,
+      },
+      employee: {
+        status: updated?.status ?? existing.status,
+        terminationDate: updated?.terminationDate ?? existing.terminationDate ?? null,
+        department: updated?.department ?? existing.department ?? null,
+        branch: updated?.branch ?? existing.branch ?? null,
+        level: updated?.level ?? existing.level ?? null,
+        numberOfVacationDays:
+          updated?.numberOfVacationDays ?? existing.numberOfVacationDays ?? null,
+        isSalaryCompany: updated?.isSalaryCompany ?? existing.isSalaryCompany,
+      },
     });
 
     return updated;

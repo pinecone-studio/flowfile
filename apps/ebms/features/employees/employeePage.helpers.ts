@@ -1,4 +1,5 @@
 import type { EmployeeCardRecord, Tone } from '../showcase/showcase.data';
+import { resolveImageSrc } from '../../lib/assets/resolveImageSrc';
 import type {
   EmployeeFilters,
   EmployeePageData,
@@ -113,7 +114,7 @@ export const toEmployeeCard = (employee: EmployeeRecord): EmployeeCardRecord => 
     id: employee.id,
     status: employee.status === 'ACTIVE' ? 'Active' : employee.status,
     statusTone: getStatusTone(employee.status),
-    image: employee.imageUrl || '/image%205.svg',
+    image: resolveImageSrc(employee.imageUrl, '/image%205.svg'),
     role: roleParts.join(' - ') || employee.branch || 'Team Member',
     name: `${employee.firstName} ${employee.lastName}`.trim(),
     email: employee.email || employee.employeeCode,
