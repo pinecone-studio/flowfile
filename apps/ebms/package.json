@@ -3,8 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "next build",
-    "deploy:pages": "wrangler pages deploy out --project-name ebms",
+    "build": "next build --webpack",
+    "build:cloudflare": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "codegen": "graphql-codegen --config codegen.ts",
     "codegen:watch": "graphql-codegen --config codegen.ts --watch"
   },
@@ -16,6 +18,8 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.7",
-    "@graphql-codegen/client-preset": "^4.8.3"
+    "@graphql-codegen/client-preset": "^4.8.3",
+    "@opennextjs/cloudflare": "^1.17.1",
+    "wrangler": "^4.75.0"
   }
 }

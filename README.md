@@ -8,7 +8,7 @@
 
 ## Deployment
 
-- `apps/ebms` deploys to Cloudflare Pages as a static Next.js export.
+- `apps/ebms` deploys to Cloudflare Workers with OpenNext.
 - `.github/workflows/cd.yml` deploys both `apps/ebms` and `apps/worker` to Cloudflare on pushes to `main`.
 - `apps/worker` stays as the backend Cloudflare Worker.
 - Configure `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for deployment.
