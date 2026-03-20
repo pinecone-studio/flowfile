@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import {
   ChartColumn,
   FileText,
-  FilePenLine,
   LayoutGrid,
   SquarePen,
   Users,
