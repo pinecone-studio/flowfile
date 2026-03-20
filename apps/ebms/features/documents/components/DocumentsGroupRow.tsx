@@ -26,7 +26,6 @@ export function DocumentsGroupRow({
       : group.rawJobStatus === 'canceled' || group.rawJobStatus === 'rejected'
         ? 'text-[#f0a3af]'
         : 'text-[#95a8d4]';
-
   return (
     <button
       type="button"

@@ -56,17 +56,17 @@ export function Sidebar() {
 
   const email = user?.primaryEmailAddress?.emailAddress || 'No email available';
 
-  const avatar = user?.imageUrl || '/avatar.png';
-
   return (
     <aside className="w-full shrink-0 border-b border-white/5 bg-[linear-gradient(180deg,#122448_0%,#0d1c3c_52%,#081226_100%)] md:h-screen md:w-[269px] md:border-b-0 md:border-r md:border-r-white/5">
       <div className="flex h-full flex-col px-4 pb-5 pt-5 md:px-4 md:pb-6 md:pt-6">
         <div className="flex items-center gap-3 px-2">
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-[12px]">
-            <img
-              src={avatar}
-              alt={fullName}
-              className="h-full w-full object-cover"
+          <div className="relative shrink-0">
+            <UserButton
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: 'h-10 w-10',
+                },
+              }}
             />
             <span className="absolute bottom-0 right-0 h-[10px] w-[10px] rounded-full border-2 border-[#102042] bg-[#26cd45]" />
           </div>
@@ -79,14 +79,6 @@ export function Sidebar() {
               {email}
             </p>
           </div>
-
-          <UserButton
-            appearance={{
-              elements: {
-                userButtonAvatarBox: 'h-9 w-9',
-              },
-            }}
-          />
         </div>
 
         <nav className="mt-12 flex flex-col gap-2">
