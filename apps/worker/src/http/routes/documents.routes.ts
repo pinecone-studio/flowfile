@@ -53,8 +53,11 @@ documentsRoutes.get('/document-previews/:documentId', async (c) => {
   const approvalSummary = reviews.map((review) => ({
     reviewerEmail: review.reviewerEmail,
     reviewerName: review.reviewerName,
+    signerRole: review.signerRole,
+    signOrder: review.signOrder,
     approvedAt: review.approvedAt,
     signMethod: review.signMethod,
+    signatureImageUrl: review.signatureImageUrl,
   }));
   const html = buildWorkflowDocumentHtml({
     documentType: document.documentType,

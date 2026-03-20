@@ -221,30 +221,6 @@ export function TriggerActionDialog({
           </button>
         </div>
 
-        {triggerRules.length > 0 && !compactSalaryIncreaseDialog ? (
-          <div className="mt-6 rounded-[20px] border border-white/10 bg-[#0b162a] px-5 py-5">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-[#8ea4d3]">
-              Employee Trigger Rules
-            </p>
-            <div className="mt-4 overflow-hidden rounded-[18px] border border-white/8">
-              <div className="grid grid-cols-[1.2fr_1.6fr_1.1fr] bg-[#12213e] px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#8ea4d3]">
-                <span>Employee Field Changed</span>
-                <span>Condition</span>
-                <span>Action Fired</span>
-              </div>
-              {triggerRules.map((rule) => (
-                <div
-                  key={`${rule.field}:${rule.condition}`}
-                  className="grid grid-cols-[1.2fr_1.6fr_1.1fr] gap-3 border-t border-white/8 bg-[#101d36] px-4 py-3 text-[14px] text-white"
-                >
-                  <span>{rule.field}</span>
-                  <span className="text-[#d8e3f8]">{rule.condition}</span>
-                  <span className="text-[#9fc2ff]">{rule.actionFired}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
 
         {compactSalaryIncreaseDialog ? (
           <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -263,9 +239,7 @@ export function TriggerActionDialog({
                     <span className="text-[15px] font-medium text-white">
                       {getFieldLabel(fieldName)}
                     </span>
-                    <span className="rounded-full bg-white/5 px-2.5 py-1 font-mono text-[11px] text-[#8ea4d3]">
-                      {fieldName}
-                    </span>
+                  
                   </div>
 
                   <select
@@ -288,15 +262,6 @@ export function TriggerActionDialog({
           </div>
         ) : (
           <div className="mt-6 space-y-4">
-            <div>
-              <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-[#8ea4d3]">
-                Editable Action Fields
-              </p>
-              <p className="mt-2 text-[14px] leading-6 text-[#afc0e3]">
-                These values are prefilled from the employee record and will be merged
-                into the triggered workflow payload.
-              </p>
-            </div>
 
             {action.fields.length > 0 ? action.fields.map((fieldName) => {
               const fieldType = getFieldType(fieldName);

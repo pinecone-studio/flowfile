@@ -12,8 +12,9 @@
 - `.github/workflows/cd.yml` deploys both `apps/ebms` and `apps/worker` to Cloudflare on pushes to `main`.
 - `apps/worker` stays as the backend Cloudflare Worker.
 - Configure `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for deployment.
-- Configure worker auth secrets in GitHub Actions so `apps/worker` can verify Clerk tokens:
+- Configure worker auth secrets in GitHub Actions before enabling Clerk-protected worker routes:
   `CLERK_SECRET_KEY` or `CLERK_JWT_KEY`, plus optional `CLERK_AUTHORIZED_PARTIES`.
+- The worker deploy currently continues when those Clerk secrets are unset and only syncs them when present.
 - Workflow notifications now try Brevo first when `BREVO_API_KEY` is set, and fall back to MailChannels when `MAILCHANNELS_API_KEY` plus `MAIL_FROM_EMAIL`/`MAIL_FROM_NAME` are configured. For MailChannels, the sender domain also needs to be authorized on the provider side.
 - The worker Clerk secret must match the same Clerk instance used by `apps/ebms`; if `ebms` is still using test keys, the worker must verify against that same test instance until both are moved to production.
 
