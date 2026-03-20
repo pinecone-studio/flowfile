@@ -1,4 +1,4 @@
-import { renderTemplateHtml } from '../templates/templates.service';
+import { renderTemplateHtmlStrict } from '../templates/templates.service';
 import type {
   EmployeeLike,
   WorkflowPayload,
@@ -19,8 +19,11 @@ type WorkflowDocumentInput = {
   payload: WorkflowPayload;
   recipients: WorkflowRecipient[];
   status: string;
+  templateName?: string | null;
   templateHtml?: string | null;
   approvalSummary?: ApprovalSummary[];
+  signatureImageUrl?: string | null;
+  renderSignatureImage?: boolean;
 };
 
 type PdfLine = {
@@ -81,8 +84,10 @@ function appendFlattenedValues(
 }
 
 function buildTemplateData(input: WorkflowDocumentInput) {
+  const employeeRecord = input.employee as Record<string, unknown>;
   const employeeName =
     `${input.employee.firstName} ${input.employee.lastName}`.trim();
+  const nowIso = new Date().toISOString();
   const approvalSummaryText = (input.approvalSummary ?? [])
     .map((approval) => {
       const reviewer = approval.reviewerName ?? approval.reviewerEmail;
@@ -97,30 +102,54 @@ function buildTemplateData(input: WorkflowDocumentInput) {
         `${recipient.signOrder}. ${recipient.role}: ${recipient.name ?? recipient.email}`,
     )
     .join('\n');
+  const signatureValue =
+    input.renderSignatureImage && input.signatureImageUrl
+      ? `<img src="${input.signatureImageUrl}" alt="Signature" style="display:block;max-width:100%;max-height:72px;object-fit:contain;" />`
+      : approvalSummaryText
+        ? 'Signed electronically'
+        : '';
 
   const data: Record<string, string> = {
     employeeName,
+    fullName: employeeName,
+    employeeFullName: employeeName,
     employeeId: input.employee.id,
+    employeeCode: stringifyTemplateValue(employeeRecord.employeeCode),
     firstName: input.employee.firstName,
     lastName: input.employee.lastName,
     employeeFirstName: input.employee.firstName,
     employeeLastName: input.employee.lastName,
+    firstNameEng: stringifyTemplateValue(employeeRecord.firstNameEng),
+    lastNameEng: stringifyTemplateValue(employeeRecord.lastNameEng),
     employeeEmail: input.employee.email ?? '',
+    email: input.employee.email ?? '',
     department: input.employee.department ?? '',
     branch: input.employee.branch ?? '',
+    level: stringifyTemplateValue(employeeRecord.level),
+    hireDate: stringifyTemplateValue(employeeRecord.hireDate),
+    terminationDate: stringifyTemplateValue(employeeRecord.terminationDate),
+    numberOfVacationDays: stringifyTemplateValue(
+      employeeRecord.numberOfVacationDays,
+    ),
+    isSalaryCompany: stringifyTemplateValue(employeeRecord.isSalaryCompany),
     actionName: input.actionName,
     documentType: input.documentType,
+    templateName: input.templateName ?? '',
     status: input.status,
+    employeeStatus: stringifyTemplateValue(employeeRecord.status ?? input.status),
+    workflowStatus: input.status,
     requiredSigners: recipientSummary,
     approvalSummary: approvalSummaryText,
-    currentDate: new Date().toISOString(),
-    signature: approvalSummaryText ? 'Signed electronically' : '',
+    currentDate: nowIso,
+    currentDateOnly: nowIso.slice(0, 10),
+    generatedAt: nowIso,
+    signature: signatureValue,
   };
 
   appendFlattenedValues(data, 'employee', input.employee);
   appendFlattenedValues(data, 'payload', input.payload);
 
-  for (const [key, value] of Object.entries(input.employee as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(employeeRecord)) {
     data[key] = stringifyTemplateValue(value);
   }
 
@@ -208,11 +237,18 @@ const defaultDocumentHtml = (input: WorkflowDocumentInput) => {
 };
 
 export const buildWorkflowDocumentHtml = (input: WorkflowDocumentInput) => {
-  const templateHtml = input.templateHtml?.trim()
-    ? renderTemplateHtml(input.templateHtml, buildTemplateData(input))
-    : defaultDocumentHtml(input);
+  if (input.templateName && !input.templateHtml?.trim()) {
+    throw new Error(`Template "${input.templateName}" has no HTML content`);
+  }
 
-  return `${templateHtml}${buildWorkflowMetadataHtml(input)}`;
+  if (input.templateHtml?.trim()) {
+    return renderTemplateHtmlStrict(input.templateHtml, buildTemplateData(input), {
+      templateName: input.templateName,
+      documentType: input.documentType,
+    });
+  }
+
+  return `${defaultDocumentHtml(input)}${buildWorkflowMetadataHtml(input)}`;
 };
 
 function decodeHtmlEntities(text: string) {

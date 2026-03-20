@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { LoaderCircle } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import SignaturePad from 'signature_pad';
-import { requestJson } from '../../lib/api/client';
+import { buildApiUrl, requestJson } from '../../lib/api/client';
 import { getEmployeeById } from '../../lib/employee/api';
 
 type ReviewResponse = {
@@ -19,7 +19,10 @@ type ReviewResponse = {
     employeeId: string;
   } | null;
   document: {
+    id: string;
     documentType: string;
+    fileName: string;
+    status: string;
     createdAt: string;
   } | null;
 };
@@ -60,8 +63,34 @@ function formatDocumentTitle(value: string | undefined) {
     .join(' ');
 }
 
+function formatSignerRole(value: string | null | undefined) {
+  if (!value) {
+    return 'Signer';
+  }
+
+  return value
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function formatReviewStatus(value: string | null | undefined) {
+  switch (value) {
+    case 'approved':
+      return 'Signed';
+    case 'rejected':
+      return 'Rejected';
+    case 'opened':
+      return 'Opened';
+    case 'awaiting_review':
+      return 'Awaiting signature';
+    default:
+      return value ? formatDocumentTitle(value) : 'Pending';
+  }
+}
+
 export default function SignPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoaded, isSignedIn } = useAuth();
   const token = searchParams.get('token');
@@ -73,6 +102,7 @@ export default function SignPage() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [previewVersion, setPreviewVersion] = useState(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -211,17 +241,21 @@ export default function SignPage() {
       setError(null);
       setMessage(null);
 
-      await requestJson(`/api/v1/reviews/${token}/approve`, {
-        method: 'POST',
-        body: JSON.stringify({
-          reviewerName: review?.reviewRequest.reviewerName || undefined,
-          signatureImageUrl: canvasRef.current?.toDataURL() ?? null,
-          signMethod: 'signature_pad',
-        }),
-      });
+      const updatedReview = await requestJson<ReviewResponse>(
+        `/api/v1/reviews/${token}/approve`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            reviewerName: review?.reviewRequest.reviewerName || undefined,
+            signatureImageUrl: canvasRef.current?.toDataURL() ?? null,
+            signMethod: 'signature_pad',
+          }),
+        },
+      );
 
+      setReview(updatedReview);
+      setPreviewVersion((current) => current + 1);
       setMessage('Document approved successfully.');
-      router.refresh();
     } catch (submitError) {
       setError(
         submitError instanceof Error
@@ -234,6 +268,17 @@ export default function SignPage() {
   };
 
   const dateParts = formatDateParts(review?.document?.createdAt);
+  const reviewStatusLabel = formatReviewStatus(review?.reviewRequest.status);
+  const signerRoleLabel = formatSignerRole(review?.reviewRequest.signerRole);
+  const signerName =
+    review?.reviewRequest.reviewerName ||
+    review?.reviewRequest.reviewerEmail ||
+    '-';
+  const contractPreviewUrl = review?.document?.id
+    ? `${buildApiUrl(`/api/v1/document-previews/${review.document.id}`)}?preview=${previewVersion}`
+    : null;
+  const isApproved = review?.reviewRequest.status === 'approved' || Boolean(message);
+  const isRejected = review?.reviewRequest.status === 'rejected';
 
   if (loading) {
     return (
@@ -253,58 +298,117 @@ export default function SignPage() {
   }
 
   return (
-    <div className="w-full max-w-[670px] overflow-hidden rounded-[28px] bg-[#08101c]/95 shadow-[0_40px_80px_rgba(0,0,0,0.38)]">
-      <div className="px-12 py-10">
-        <h1 className="text-[28px] font-semibold tracking-[-0.03em] text-white">
-          Signing Form
-        </h1>
+    <div className="w-full max-w-[1180px] overflow-hidden rounded-[28px] bg-[#08101c]/95 shadow-[0_40px_80px_rgba(0,0,0,0.38)]">
+      <div className="grid lg:grid-cols-[minmax(0,1.2fr)_420px]">
+        <div className="border-b border-[#17325f] lg:border-b-0 lg:border-r">
+          <div className="px-6 py-8 sm:px-8 sm:py-10">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-[16px] uppercase tracking-[0.18em] text-[#7d92be]">
+                  Contract Preview
+                </p>
+                <h1 className="mt-3 text-[26px] font-semibold tracking-[-0.03em] text-white">
+                  {formatDocumentTitle(review?.document?.documentType)}
+                </h1>
+                <p className="mt-3 text-[16px] text-[#b9cae7]">
+                  Employee: {employeeName}
+                </p>
+              </div>
 
-        <div className="mt-10 flex items-start justify-between gap-10">
-          <div>
-            <p className="text-[20px] text-[#7d92be]">{employeeName}</p>
-            <p className="mt-1 text-[22px] text-[#f0f4ff]">
-              {formatDocumentTitle(review?.document?.documentType)}
-            </p>
-          </div>
+              <div className="text-left sm:text-right">
+                <p className="text-[18px] text-[#7d92be]">{dateParts.date}</p>
+                <p className="text-[18px] text-[#f0f4ff]">{dateParts.time}</p>
+              </div>
+            </div>
 
-          <div className="text-right">
-            <p className="text-[20px] text-[#7d92be]">{dateParts.date}</p>
-            <p className="text-[22px] text-[#f0f4ff]">{dateParts.time}</p>
+            <div className="mt-6 flex flex-wrap gap-3 text-[13px] text-[#dbe7ff]">
+              <span className="rounded-full border border-[#2b4d89] bg-[#10213d] px-3 py-1">
+                Signer: {signerName}
+              </span>
+              <span className="rounded-full border border-[#2b4d89] bg-[#10213d] px-3 py-1">
+                Role: {signerRoleLabel}
+              </span>
+              <span className="rounded-full border border-[#2b4d89] bg-[#10213d] px-3 py-1">
+                Status: {reviewStatusLabel}
+              </span>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3 text-[14px] text-[#9db2d9]">
+              <span>The contract below is the generated backend document for this review.</span>
+              {contractPreviewUrl ? (
+                <a
+                  href={contractPreviewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-[#dce8ff] underline decoration-[#4a79c6]/70 underline-offset-4"
+                >
+                  Open full contract
+                </a>
+              ) : null}
+            </div>
+
+            <div className="mt-8 overflow-hidden rounded-[22px] border border-[#23478a]/60 bg-[#060b12]">
+              {contractPreviewUrl ? (
+                <iframe
+                  key={contractPreviewUrl}
+                  title="Contract preview"
+                  src={contractPreviewUrl}
+                  className="h-[540px] w-full bg-white sm:h-[660px] lg:h-[760px]"
+                />
+              ) : (
+                <div className="flex min-h-[360px] items-center justify-center px-6 text-center text-[16px] text-[#aab9d5]">
+                  The contract preview is not available for this review yet.
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="mt-10 h-px bg-[#2b4d89]/85" />
+        <div className="flex flex-col">
+          <div className="px-6 py-8 sm:px-8 sm:py-10">
+            <h2 className="text-[28px] font-semibold tracking-[-0.03em] text-white">
+              Sign Here
+            </h2>
+            <p className="mt-3 text-[15px] leading-6 text-[#a8bad9]">
+              Review the contract on the left, then sign below to approve it.
+            </p>
 
-        <h2 className="mt-8 text-[28px] font-semibold text-white">Sign Here</h2>
+            {message ? (
+              <div className="mt-6 rounded-[14px] border border-[#255f37] bg-[#14301e] px-4 py-3 text-[15px] text-[#d1ffe0]">
+                {message}
+              </div>
+            ) : null}
 
-        {message ? (
-          <div className="mt-6 rounded-[14px] border border-[#255f37] bg-[#14301e] px-4 py-3 text-[15px] text-[#d1ffe0]">
-            {message}
+            {error ? (
+              <div className="mt-6 rounded-[14px] border border-[#7f2834] bg-[#39131c] px-4 py-3 text-[15px] text-[#ffd7df]">
+                {error}
+              </div>
+            ) : null}
+
+            <div className="mt-8 rounded-[18px] bg-[#8fa1c1] p-0">
+              <canvas
+                ref={canvasRef}
+                className="block w-full rounded-[18px] touch-none"
+              />
+            </div>
           </div>
-        ) : null}
 
-        {error ? (
-          <div className="mt-6 rounded-[14px] border border-[#7f2834] bg-[#39131c] px-4 py-3 text-[15px] text-[#ffd7df]">
-            {error}
-          </div>
-        ) : null}
-
-        <div className="mt-8 rounded-[18px] bg-[#8fa1c1] p-0">
-          <canvas
-            ref={canvasRef}
-            className="block w-full rounded-[18px] touch-none"
-          />
+          <button
+            type="button"
+            onClick={handleApprove}
+            disabled={submitting || isApproved || isRejected}
+            className="mt-auto flex h-[70px] w-full items-center justify-center bg-[#23478a] text-[24px] font-semibold text-white disabled:opacity-60"
+          >
+            {submitting
+              ? 'Approving...'
+              : isRejected
+                ? 'Rejected'
+                : isApproved
+                  ? 'Approved'
+                  : 'Approve'}
+          </button>
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={handleApprove}
-        disabled={submitting || Boolean(message)}
-        className="flex h-[70px] w-full items-center justify-center bg-[#23478a] text-[24px] font-semibold text-white disabled:opacity-60"
-      >
-        {submitting ? 'Approving...' : message ? 'Approved' : 'Approve'}
-      </button>
     </div>
   );
 }

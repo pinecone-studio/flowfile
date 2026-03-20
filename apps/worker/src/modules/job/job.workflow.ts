@@ -5,7 +5,7 @@ import {
   updateGeneratedDocument,
 } from '../document/document.service';
 import { createReviewRequest } from '../review/review.service';
-import { getTemplateByName } from '../templates/templates.service';
+import { requireTemplateByName } from '../templates/templates.service';
 import {
   buildDocumentFileUrl,
   buildWorkflowDocumentPdf,
@@ -106,7 +106,7 @@ export async function generateWorkflowArtifacts(
   for (const documentConfig of context.documents.sort(
     (left, right) => left.generationOrder - right.generationOrder,
   )) {
-    const template = await getTemplateByName(env, documentConfig.templateName);
+    const template = await requireTemplateByName(env, documentConfig.templateName);
     const storagePath =
       documentConfig.storagePath ??
       buildStoragePath(
@@ -121,7 +121,8 @@ export async function generateWorkflowArtifacts(
       payload: context.actionPayload,
       recipients: context.workflowRecipients,
       status: 'awaiting_signatures',
-      templateHtml: template?.htmlContent ?? null,
+      templateName: template.name,
+      templateHtml: template.htmlContent,
     });
 
     const document = await addGeneratedDocument(env, {
@@ -129,7 +130,7 @@ export async function generateWorkflowArtifacts(
       employeeId: context.employee.id,
       actionName: context.action.actionName,
       documentType: documentConfig.documentType,
-      templateName: documentConfig.templateName,
+      templateName: template.name,
       fileName: documentConfig.fileName,
       storagePath,
       fileUrl: null,

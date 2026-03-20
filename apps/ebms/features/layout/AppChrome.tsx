@@ -1,12 +1,17 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '../sidebar/Sidebar';
 
 export function AppChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isSignPage = pathname.startsWith('/sign');
+  const chromeStyle = {
+    '--app-sidebar-width': '269px',
+    '--app-content-gutter': '36px',
+    '--dashboard-shell-width': '1171px',
+  } as CSSProperties;
 
   if (isSignPage) {
     return (
@@ -24,10 +29,13 @@ export function AppChrome({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen md:flex">
+    <div
+      className="grid min-h-screen grid-cols-[var(--app-sidebar-width)_minmax(0,1fr)]"
+      style={chromeStyle}
+    >
       <Sidebar />
 
-      <div className="relative flex-1 overflow-hidden">
+      <div className="relative min-w-0 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-90"
           style={{ backgroundImage: "url('/bg.png')" }}
@@ -37,7 +45,7 @@ export function AppChrome({ children }: { children: ReactNode }) {
 
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_22%,rgba(159,186,227,0.38),transparent_24%),radial-gradient(circle_at_66%_62%,rgba(124,151,198,0.28),transparent_26%),radial-gradient(circle_at_28%_30%,rgba(41,78,155,0.18),transparent_20%)]" />
 
-        <main className="relative h-full min-h-screen overflow-y-auto px-4 py-6 md:h-screen md:px-8 md:py-8 xl:px-10 xl:py-9">
+        <main className="relative flex min-h-screen min-w-0 flex-col overflow-auto px-[var(--app-content-gutter)] py-[34px]">
           {children}
         </main>
       </div>

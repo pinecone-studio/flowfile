@@ -1,3 +1,5 @@
+import { DetailDocumentsCard } from './DetailDocumentsCard';
+import { DetailGenerateCard } from './DetailGenerateCard';
 import { DetailInfoCard } from './DetailInfoCard';
 import { DetailOverviewCard } from './DetailOverviewCard';
 import { DetailTimelineCard } from './DetailTimelineCard';
@@ -20,9 +22,9 @@ export function EmployeeDetailPage({
   onActionSelect,
 }: EmployeeDetailPageProps) {
   return (
-    <section className="mx-auto w-full max-w-[1170px] pb-10">
-      <div className="grid gap-8 xl:grid-cols-[616px_519px] xl:gap-[35px]">
-        <div className="space-y-8">
+    <section className="mx-auto w-full max-w-[var(--dashboard-shell-width)] pb-10">
+      <div className="grid gap-7 xl:grid-cols-[616px_520px] xl:gap-[35px]">
+        <div className="space-y-[24px] xl:space-y-[20px]">
           <DetailOverviewCard
             profile={profile}
             actions={actions}
@@ -35,8 +37,10 @@ export function EmployeeDetailPage({
           <DetailInfoCard title="Contact" fields={profile.contactInfo} />
         </div>
 
-        <div>
-          <DetailTimelineCard items={profile.timeline} documents={profile.documents} />
+        <div className="space-y-[48px]">
+          <DetailTimelineCard items={profile.timeline} />
+          <DetailDocumentsCard items={profile.documents} />
+          <DetailGenerateCard options={profile.generateOptions} />
         </div>
       </div>
     </section>

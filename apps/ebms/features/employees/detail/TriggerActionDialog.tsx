@@ -45,6 +45,11 @@ type TriggerRule = {
   actionFired: string;
 };
 
+type SelectOption = {
+  value: string;
+  label: string;
+};
+
 const triggerRulesByAction: Partial<Record<string, TriggerRule[]>> = {
   salary_increase: [
     {
@@ -111,6 +116,62 @@ const triggerRulesByAction: Partial<Record<string, TriggerRule[]>> = {
   ],
 };
 
+const salaryIncreaseActionNames = new Set(['salary_increase', 'promote_employee']);
+
+const salaryIncreaseSelectOptions: Record<string, SelectOption[]> = {
+  level: [
+    { value: 'Junior', label: 'Junior' },
+    { value: 'Mid', label: 'Mid' },
+    { value: 'Senior', label: 'Senior' },
+    { value: 'Lead', label: 'Lead' },
+    { value: 'Manager', label: 'Manager' },
+  ],
+  numberOfVacationDays: [
+    { value: '15', label: '15 days' },
+    { value: '18', label: '18 days' },
+    { value: '20', label: '20 days' },
+    { value: '22', label: '22 days' },
+    { value: '25', label: '25 days' },
+    { value: '30', label: '30 days' },
+  ],
+  isSalaryCompany: [
+    { value: 'true', label: 'Yes' },
+    { value: 'false', label: 'No' },
+  ],
+};
+
+function isSalaryIncreaseAction(actionName: string) {
+  return salaryIncreaseActionNames.has(actionName);
+}
+
+function getSelectOptionLabel(fieldName: string, value: string) {
+  if (fieldName === 'isSalaryCompany') {
+    return value === 'true' ? 'Yes' : value === 'false' ? 'No' : value;
+  }
+
+  if (fieldName === 'numberOfVacationDays') {
+    return `${value} days`;
+  }
+
+  return value;
+}
+
+function getSalaryIncreaseSelectOptions(fieldName: string, currentValue: string) {
+  const options = salaryIncreaseSelectOptions[fieldName] ?? [];
+
+  if (!currentValue || options.some((option) => option.value === currentValue)) {
+    return options;
+  }
+
+  return [
+    {
+      value: currentValue,
+      label: getSelectOptionLabel(fieldName, currentValue),
+    },
+    ...options,
+  ];
+}
+
 export function TriggerActionDialog({
   action,
   values,
@@ -123,8 +184,10 @@ export function TriggerActionDialog({
     return null;
   }
   const triggerRules = triggerRulesByAction[action.actionName] ?? [];
-  const description =
-    triggerRules.length > 0
+  const compactSalaryIncreaseDialog = isSalaryIncreaseAction(action.actionName);
+  const description = compactSalaryIncreaseDialog
+    ? null
+    : triggerRules.length > 0
       ? 'Trigger rules for this action.'
       : action.fields.length > 0
         ? 'Review the fields below before triggering this action.'
@@ -141,9 +204,11 @@ export function TriggerActionDialog({
             <h2 className="mt-2 text-[30px] font-semibold tracking-[-0.03em] text-white">
               {action.label}
             </h2>
-            <p className="mt-3 max-w-[560px] text-[15px] leading-6 text-[#c7d4ef]">
-              {description}
-            </p>
+            {description ? (
+              <p className="mt-3 max-w-[560px] text-[15px] leading-6 text-[#c7d4ef]">
+                {description}
+              </p>
+            ) : null}
           </div>
 
           <button
@@ -156,7 +221,7 @@ export function TriggerActionDialog({
           </button>
         </div>
 
-        {triggerRules.length > 0 ? (
+        {triggerRules.length > 0 && !compactSalaryIncreaseDialog ? (
           <div className="mt-6 rounded-[20px] border border-white/10 bg-[#0b162a] px-5 py-5">
             <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-[#8ea4d3]">
               Employee Trigger Rules
@@ -181,50 +246,92 @@ export function TriggerActionDialog({
           </div>
         ) : null}
 
-        <div className="mt-6 space-y-4">
-          <div>
-            <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-[#8ea4d3]">
-              Editable Action Fields
-            </p>
-            <p className="mt-2 text-[14px] leading-6 text-[#afc0e3]">
-              These values are prefilled from the employee record and will be merged
-              into the triggered workflow payload.
-            </p>
-          </div>
+        {compactSalaryIncreaseDialog ? (
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {action.fields.map((fieldName) => {
+              const options = getSalaryIncreaseSelectOptions(
+                fieldName,
+                values[fieldName] ?? '',
+              );
 
-          {action.fields.length > 0 ? action.fields.map((fieldName) => {
-            const fieldType = getFieldType(fieldName);
+              return (
+                <label
+                  key={fieldName}
+                  className="rounded-[20px] border border-white/10 bg-[#0b162a] p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-[15px] font-medium text-white">
+                      {getFieldLabel(fieldName)}
+                    </span>
+                    <span className="rounded-full bg-white/5 px-2.5 py-1 font-mono text-[11px] text-[#8ea4d3]">
+                      {fieldName}
+                    </span>
+                  </div>
 
-            return (
-              <label key={fieldName} className="block">
-                <span className="mb-2 block text-[15px] font-medium text-[#93a7d1]">
-                  {getFieldLabel(fieldName)}
-                </span>
-                {fieldType === 'boolean' ? (
                   <select
-                    value={values[fieldName] ?? 'false'}
-                    onChange={(event) => onChange(fieldName, event.target.value)}
-                    className="h-[50px] w-full rounded-[14px] border border-[#294777] bg-[#10203b] px-4 text-[16px] text-white outline-none transition focus:border-[#4272c2]"
-                  >
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                  </select>
-                ) : (
-                  <input
-                    type={fieldType}
                     value={values[fieldName] ?? ''}
                     onChange={(event) => onChange(fieldName, event.target.value)}
-                    className="h-[50px] w-full rounded-[14px] border border-[#294777] bg-[#10203b] px-4 text-[16px] text-white outline-none transition focus:border-[#4272c2]"
-                  />
-                )}
-              </label>
-            );
-          }) : (
-            <p className="rounded-[16px] bg-[#10203b] px-4 py-4 text-[16px] text-[#dce7fb]">
-              This action does not require any extra fields. Trigger it directly.
-            </p>
-          )}
-        </div>
+                    className="mt-4 h-[50px] w-full rounded-[14px] border border-[#294777] bg-[#10203b] px-4 text-[16px] text-white outline-none transition focus:border-[#4272c2]"
+                  >
+                    <option value="" disabled>
+                      Select {getFieldLabel(fieldName)}
+                    </option>
+                    {options.map((option) => (
+                      <option key={`${fieldName}:${option.value}`} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="mt-6 space-y-4">
+            <div>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-[#8ea4d3]">
+                Editable Action Fields
+              </p>
+              <p className="mt-2 text-[14px] leading-6 text-[#afc0e3]">
+                These values are prefilled from the employee record and will be merged
+                into the triggered workflow payload.
+              </p>
+            </div>
+
+            {action.fields.length > 0 ? action.fields.map((fieldName) => {
+              const fieldType = getFieldType(fieldName);
+
+              return (
+                <label key={fieldName} className="block">
+                  <span className="mb-2 block text-[15px] font-medium text-[#93a7d1]">
+                    {getFieldLabel(fieldName)}
+                  </span>
+                  {fieldType === 'boolean' ? (
+                    <select
+                      value={values[fieldName] ?? 'false'}
+                      onChange={(event) => onChange(fieldName, event.target.value)}
+                      className="h-[50px] w-full rounded-[14px] border border-[#294777] bg-[#10203b] px-4 text-[16px] text-white outline-none transition focus:border-[#4272c2]"
+                    >
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  ) : (
+                    <input
+                      type={fieldType}
+                      value={values[fieldName] ?? ''}
+                      onChange={(event) => onChange(fieldName, event.target.value)}
+                      className="h-[50px] w-full rounded-[14px] border border-[#294777] bg-[#10203b] px-4 text-[16px] text-white outline-none transition focus:border-[#4272c2]"
+                    />
+                  )}
+                </label>
+              );
+            }) : (
+              <p className="rounded-[16px] bg-[#10203b] px-4 py-4 text-[16px] text-[#dce7fb]">
+                This action does not require any extra fields. Trigger it directly.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="mt-8 flex justify-end gap-3">
           <button

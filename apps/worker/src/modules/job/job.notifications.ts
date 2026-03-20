@@ -25,7 +25,8 @@ function getInitialReviewRequests(reviewRequests: ReviewRequestRecord[]) {
 
   return reviewRequests.filter(
     (reviewRequest) =>
-      minOrderByDocument.get(reviewRequest.documentId) === reviewRequest.signOrder,
+      minOrderByDocument.get(reviewRequest.documentId) ===
+      reviewRequest.signOrder,
   );
 }
 
@@ -33,7 +34,9 @@ export async function emitWorkflowGenerationNotifications(
   env: EnvWithBindings,
   context: TriggerContext,
   job: JobRecord,
-  activeJob: JobRecord | Awaited<ReturnType<typeof import('./job.repository').updateJob>>,
+  activeJob:
+    | JobRecord
+    | Awaited<ReturnType<typeof import('./job.repository').updateJob>>,
   createdDocuments: GeneratedDocumentRecord[],
   createdReviewRequests: ReviewRequestRecord[],
 ) {
@@ -87,5 +90,36 @@ export async function emitWorkflowGenerationNotifications(
       apiBaseUrl: env.API_BASE_URL ?? env.APP_BASE_URL,
     }),
   ];
-  await emitWorkflowNotifications(env, notifications);
+  const deliveries = await emitWorkflowNotifications(env, notifications);
+  const employeeGeneratedRecipient = generatedRecipients.find(
+    (recipient) => recipient.role === 'employee',
+  );
+  const failedEmployeeGeneratedDelivery =
+    employeeGeneratedRecipient == null
+      ? null
+      : (deliveries.find(
+          (delivery) =>
+            delivery.type === 'documents_generated' &&
+            delivery.status !== 'sent' &&
+            delivery.to.toLowerCase() ===
+              employeeGeneratedRecipient.email.toLowerCase(),
+        ) ?? null);
+  const failedReviewDeliveries = deliveries.filter(
+    (delivery) =>
+      delivery.type === 'review_request' && delivery.status !== 'sent',
+  );
+
+  if (failedEmployeeGeneratedDelivery) {
+    throw new Error(
+      `Failed to send generated document email to ${failedEmployeeGeneratedDelivery.to}. ${failedEmployeeGeneratedDelivery.errorMessage ?? 'Email delivery failed.'}`,
+    );
+  }
+
+  if (failedReviewDeliveries.length > 0) {
+    const firstFailure = failedReviewDeliveries[0];
+
+    throw new Error(
+      `Failed to send sign request email to ${firstFailure.to}. ${firstFailure.errorMessage ?? 'Email delivery failed.'}`,
+    );
+  }
 }

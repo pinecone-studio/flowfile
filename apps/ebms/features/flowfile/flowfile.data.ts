@@ -76,7 +76,7 @@ export const dashboardActions = [
   {
     id: 'dashboard-action-1',
     avatar: '/pro5.png',
-    employee: 'Narantsatsral.B',
+    employee: 'Narantsatsralt.B',
     code: 'EMP-004',
     action: 'Promotion',
     tone: 'promotion' as const,
@@ -87,7 +87,7 @@ export const dashboardActions = [
   {
     id: 'dashboard-action-2',
     avatar: '/pro5.png',
-    employee: 'Narantsatsral.B',
+    employee: 'Narantsatsralt.B',
     code: 'EMP-004',
     action: 'Promotion',
     tone: 'promotion' as const,
@@ -98,7 +98,7 @@ export const dashboardActions = [
   {
     id: 'dashboard-action-3',
     avatar: '/pro5.png',
-    employee: 'Narantsatsral.B',
+    employee: 'Narantsatsralt.B',
     code: 'EMP-004',
     action: 'Promotion',
     tone: 'promotion' as const,
@@ -112,37 +112,77 @@ export const dashboardDocuments = [
   {
     id: 'dashboard-document-1',
     name: 'Salary Increase Notice',
-    employee: 'Narantsatsral.B',
+    employee: 'Narantsatsralt.B',
     status: 'Generated',
     timestamp: 'Jun 15, 09:14',
   },
   {
     id: 'dashboard-document-2',
     name: 'Salary Increase Notice',
-    employee: 'Narantsatsral.B',
+    employee: 'Narantsatsralt.B',
     status: 'Generated',
     timestamp: 'Jun 15, 09:14',
   },
   {
     id: 'dashboard-document-3',
     name: 'Salary Increase Notice',
-    employee: 'Narantsatsral.B',
+    employee: 'Narantsatsralt.B',
     status: 'Generated',
     timestamp: 'Jun 15, 09:14',
   },
   {
     id: 'dashboard-document-4',
     name: 'Salary Increase Notice',
-    employee: 'Narantsatsral.B',
+    employee: 'Narantsatsralt.B',
     status: 'Generating...',
     timestamp: 'Jun 15, 09:14',
   },
   {
     id: 'dashboard-document-5',
     name: 'Salary Increase Notice',
-    employee: 'Narantsatsral.B',
+    employee: 'Narantsatsralt.B',
     status: 'Failed',
     timestamp: 'Jun 15, 09:14',
+  },
+];
+
+export const dashboardStats = [
+  {
+    id: 'dashboard-stat-1',
+    value: '1',
+    label: 'New Actions Today',
+  },
+  {
+    id: 'dashboard-stat-2',
+    value: '4',
+    label: 'New Documents Today',
+  },
+  {
+    id: 'dashboard-stat-3',
+    value: '4',
+    label: 'New Documents Today',
+  },
+  {
+    id: 'dashboard-stat-4',
+    value: '4',
+    label: 'New Documents Today',
+  },
+];
+
+export const dashboardWaitingDocuments = [
+  {
+    id: 'dashboard-waiting-document-1',
+    employee: 'Narantsatsralt.B',
+    name: 'Salary Increase Notice',
+    date: 'Jun 15, 2026',
+    time: '09:14',
+  },
+  {
+    id: 'dashboard-waiting-document-2',
+    employee: 'Narantsatsralt.B',
+    name: 'Salary Increase Notice',
+    date: 'Jun 15, 2026',
+    time: '09:14',
   },
 ];
 

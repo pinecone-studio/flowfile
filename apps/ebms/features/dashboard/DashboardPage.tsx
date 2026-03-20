@@ -13,7 +13,7 @@ import {
 
 function DashboardPage() {
   return (
-    <PageShell>
+    <PageShell className="max-w-[var(--dashboard-shell-width)] gap-[30px]">
       <PageTitle
         title="Dashboard"
         subtitle={
@@ -26,12 +26,15 @@ function DashboardPage() {
       <PageDivider />
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,746px)_minmax(0,1fr)]">
-        <GlassPanel className="overflow-hidden">
+        <GlassPanel className="h-[385px] overflow-hidden">
           <PanelHeader title="Latest Actions" />
-          <div className="space-y-8 p-8">
+          <div className="flex h-[calc(100%-42px)] flex-col px-8 py-7">
             {dashboardActions.map((row) => (
-              <div key={row.id} className="border-b border-white/5 pb-8 last:border-b-0 last:pb-0">
-                <div className="flex items-start gap-4">
+              <div
+                key={row.id}
+                className="flex flex-1 items-center border-b border-white/5 py-4 first:pt-0 last:border-b-0 last:pb-0"
+              >
+                <div className="flex w-full items-center gap-4">
                   <img
                     src={row.avatar}
                     alt={row.employee}
@@ -54,7 +57,7 @@ function DashboardPage() {
                       value={row.progress}
                       label={row.action}
                       trailing={row.state}
-                      className="mt-4"
+                      className="mt-[15px]"
                     />
                   </div>
                 </div>
@@ -63,11 +66,14 @@ function DashboardPage() {
           </div>
         </GlassPanel>
 
-        <GlassPanel className="overflow-hidden">
+        <GlassPanel className="h-[338px] overflow-hidden">
           <PanelHeader title="Latest Documents" />
-          <div className="space-y-7 p-8">
+          <div className="flex h-[calc(100%-42px)] flex-col px-8 py-6">
             {dashboardDocuments.map((row) => (
-              <div key={row.id} className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_36px] items-start gap-5">
+              <div
+                key={row.id}
+                className="grid flex-1 grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,0.9fr)_36px] items-center gap-5 border-b border-white/5 py-3 first:pt-0 last:border-b-0 last:pb-0"
+              >
                 <span className="truncate text-[18px] font-medium text-[#f1f5ff]">
                   {row.name}
                 </span>
