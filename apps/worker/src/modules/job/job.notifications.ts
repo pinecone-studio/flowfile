@@ -77,13 +77,14 @@ export async function emitWorkflowGenerationNotifications(
       employee: context.employee,
       documents: createdDocuments,
       recipients: generatedRecipients,
-      baseUrl: env.APP_BASE_URL,
+      apiBaseUrl: env.API_BASE_URL ?? env.APP_BASE_URL,
     }),
     ...buildReviewNotifications({
       job: activeJob ?? job,
       documents: createdDocuments,
       reviewRequests: initialReviewRequests,
-      baseUrl: env.APP_BASE_URL,
+      appBaseUrl: env.APP_BASE_URL,
+      apiBaseUrl: env.API_BASE_URL ?? env.APP_BASE_URL,
     }),
   ];
   await emitWorkflowNotifications(env, notifications);

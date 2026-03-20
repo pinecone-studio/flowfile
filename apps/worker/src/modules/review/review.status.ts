@@ -188,7 +188,7 @@ export async function syncDocumentAndJobStatus(
       job,
       documents,
       recipients: completionRecipients,
-      baseUrl: env.APP_BASE_URL,
+      apiBaseUrl: env.API_BASE_URL ?? env.APP_BASE_URL,
     });
     await emitWorkflowNotifications(env, notifications);
   } else if (

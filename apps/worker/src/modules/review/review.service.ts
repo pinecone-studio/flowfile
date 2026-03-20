@@ -92,7 +92,8 @@ async function notifyNextReviewers(
     job,
     documents: [document],
     reviewRequests: nextReviewRequests,
-    baseUrl: env.APP_BASE_URL,
+    appBaseUrl: env.APP_BASE_URL,
+    apiBaseUrl: env.API_BASE_URL ?? env.APP_BASE_URL,
   });
 
   await emitWorkflowNotifications(env, notifications);

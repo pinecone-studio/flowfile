@@ -13,7 +13,7 @@ export function AppChrome({ children }: { children: ReactNode }) {
       <main className="relative min-h-screen overflow-hidden bg-[#050b16]">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-55"
-          style={{ backgroundImage: "url('/backgroundImage.jpeg')" }}
+          style={{ backgroundImage: "url('/bg.png')" }}
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,31,64,0.88)_0%,rgba(7,14,27,0.95)_100%)]" />
         <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
@@ -30,7 +30,7 @@ export function AppChrome({ children }: { children: ReactNode }) {
       <div className="relative flex-1 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-90"
-          style={{ backgroundImage: "url('/backgroundImage.jpeg')" }}
+          style={{ backgroundImage: "url('/bg.png')" }}
         />
 
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(19,41,83,0.58)_0%,rgba(12,24,47,0.78)_42%,rgba(5,10,21,0.94)_100%)]" />

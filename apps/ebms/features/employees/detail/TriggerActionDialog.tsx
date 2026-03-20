@@ -23,8 +23,93 @@ function getFieldType(fieldName: string) {
     return 'boolean';
   }
 
+  if (/email/i.test(fieldName)) {
+    return 'email';
+  }
+
   return /date/i.test(fieldName) ? 'date' : /days|number/i.test(fieldName) ? 'number' : 'text';
 }
+
+function toTitleCase(value: string) {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+type TriggerRule = {
+  field: string;
+  condition: string;
+  actionFired: string;
+};
+
+const triggerRulesByAction: Partial<Record<string, TriggerRule[]>> = {
+  salary_increase: [
+    {
+      field: 'level',
+      condition: 'Value increases (promotion)',
+      actionFired: 'promote_employee',
+    },
+    {
+      field: 'numberOfVacationDays',
+      condition: 'Value changes (benefit change)',
+      actionFired: 'promote_employee',
+    },
+    {
+      field: 'isSalaryCompany',
+      condition: 'Value changes',
+      actionFired: 'promote_employee',
+    },
+  ],
+  promote_employee: [
+    {
+      field: 'level',
+      condition: 'Value increases (promotion)',
+      actionFired: 'promote_employee',
+    },
+    {
+      field: 'numberOfVacationDays',
+      condition: 'Value changes (benefit change)',
+      actionFired: 'promote_employee',
+    },
+    {
+      field: 'isSalaryCompany',
+      condition: 'Value changes',
+      actionFired: 'promote_employee',
+    },
+  ],
+  change_position: [
+    {
+      field: 'department',
+      condition: 'Value changes (any)',
+      actionFired: 'change_position',
+    },
+    {
+      field: 'branch',
+      condition: 'Value changes (any)',
+      actionFired: 'change_position',
+    },
+    {
+      field: 'level',
+      condition: 'Value changes laterally or decreases',
+      actionFired: 'change_position',
+    },
+  ],
+  offboard_employee: [
+    {
+      field: 'terminationDate',
+      condition: 'Field set (was null)',
+      actionFired: 'offboard_employee',
+    },
+    {
+      field: 'status',
+      condition: 'New value = TERMINATED or INACTIVE',
+      actionFired: 'offboard_employee',
+    },
+  ],
+};
 
 export function TriggerActionDialog({
   action,
@@ -37,18 +122,28 @@ export function TriggerActionDialog({
   if (!action) {
     return null;
   }
+  const triggerRules = triggerRulesByAction[action.actionName] ?? [];
+  const description =
+    triggerRules.length > 0
+      ? 'Trigger rules for this action.'
+      : action.fields.length > 0
+        ? 'Review the fields below before triggering this action.'
+        : 'Trigger this action directly.';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020713]/78 px-4 backdrop-blur-[10px]">
-      <div className="w-full max-w-[560px] rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(16,28,49,0.98)_0%,rgba(8,15,29,0.98)_100%)] p-7 shadow-[0_40px_100px_rgba(0,0,0,0.45)]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#020713]/78 px-4 py-8 backdrop-blur-[10px]">
+      <div className="mx-auto w-full max-w-[680px] rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(16,28,49,0.98)_0%,rgba(8,15,29,0.98)_100%)] p-7 shadow-[0_40px_100px_rgba(0,0,0,0.45)]">
         <div className="flex items-start justify-between gap-6">
           <div>
             <p className="text-[16px] font-medium uppercase tracking-[0.18em] text-[#6f86b4]">
-              Trigger Action
+              {action.phase ? toTitleCase(action.phase) : 'Trigger Action'}
             </p>
             <h2 className="mt-2 text-[30px] font-semibold tracking-[-0.03em] text-white">
               {action.label}
             </h2>
+            <p className="mt-3 max-w-[560px] text-[15px] leading-6 text-[#c7d4ef]">
+              {description}
+            </p>
           </div>
 
           <button
@@ -61,7 +156,42 @@ export function TriggerActionDialog({
           </button>
         </div>
 
-        <div className="mt-7 space-y-4">
+        {triggerRules.length > 0 ? (
+          <div className="mt-6 rounded-[20px] border border-white/10 bg-[#0b162a] px-5 py-5">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-[#8ea4d3]">
+              Employee Trigger Rules
+            </p>
+            <div className="mt-4 overflow-hidden rounded-[18px] border border-white/8">
+              <div className="grid grid-cols-[1.2fr_1.6fr_1.1fr] bg-[#12213e] px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#8ea4d3]">
+                <span>Employee Field Changed</span>
+                <span>Condition</span>
+                <span>Action Fired</span>
+              </div>
+              {triggerRules.map((rule) => (
+                <div
+                  key={`${rule.field}:${rule.condition}`}
+                  className="grid grid-cols-[1.2fr_1.6fr_1.1fr] gap-3 border-t border-white/8 bg-[#101d36] px-4 py-3 text-[14px] text-white"
+                >
+                  <span>{rule.field}</span>
+                  <span className="text-[#d8e3f8]">{rule.condition}</span>
+                  <span className="text-[#9fc2ff]">{rule.actionFired}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-6 space-y-4">
+          <div>
+            <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-[#8ea4d3]">
+              Editable Action Fields
+            </p>
+            <p className="mt-2 text-[14px] leading-6 text-[#afc0e3]">
+              These values are prefilled from the employee record and will be merged
+              into the triggered workflow payload.
+            </p>
+          </div>
+
           {action.fields.length > 0 ? action.fields.map((fieldName) => {
             const fieldType = getFieldType(fieldName);
 

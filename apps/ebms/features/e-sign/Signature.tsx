@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { LoaderCircle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import SignaturePad from 'signature_pad';
 import { requestJson } from '../../lib/api/client';
+import { getEmployeeById } from '../../lib/employee/api';
 
 type ReviewResponse = {
   reviewRequest: {
@@ -61,6 +63,7 @@ function formatDocumentTitle(value: string | undefined) {
 export default function SignPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isLoaded, isSignedIn } = useAuth();
   const token = searchParams.get('token');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const padRef = useRef<SignaturePad | null>(null);
@@ -127,27 +130,12 @@ export default function SignPage() {
     setError(null);
 
     requestJson<ReviewResponse>(`/api/v1/reviews/${token}`)
-      .then(async (result) => {
+      .then((result) => {
         if (!active) {
           return;
         }
 
         setReview(result);
-
-        if (result.job?.employeeId) {
-          try {
-            const employee = await requestJson<ApiEmployee>(
-              `/employees/${result.job.employeeId}`,
-            );
-            if (active) {
-              setEmployeeName(`${employee.firstName}.${employee.lastName.charAt(0)}`);
-            }
-          } catch {
-            if (active) {
-              setEmployeeName(result.reviewRequest.reviewerName || '-');
-            }
-          }
-        }
       })
       .catch((requestError: unknown) => {
         if (!active) {
@@ -170,6 +158,43 @@ export default function SignPage() {
       active = false;
     };
   }, [token]);
+
+  useEffect(() => {
+    let active = true;
+
+    if (!review) {
+      return undefined;
+    }
+
+    if (!review.job?.employeeId || !isLoaded || !isSignedIn) {
+      setEmployeeName(
+        review.reviewRequest.reviewerName ||
+          review.reviewRequest.reviewerEmail ||
+          '-',
+      );
+      return undefined;
+    }
+
+    getEmployeeById(review.job.employeeId)
+      .then((employee: ApiEmployee) => {
+        if (active) {
+          setEmployeeName(`${employee.firstName}.${employee.lastName.charAt(0)}`);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setEmployeeName(
+            review.reviewRequest.reviewerName ||
+              review.reviewRequest.reviewerEmail ||
+              '-',
+          );
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isLoaded, isSignedIn, review]);
 
   const handleApprove = async () => {
     if (!token) {

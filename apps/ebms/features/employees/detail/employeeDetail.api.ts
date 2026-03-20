@@ -1,3 +1,5 @@
+import { getEmployeeById } from '../../../lib/employee/api';
+
 export type ApiEmployee = {
   id: string;
   firstName: string;
@@ -20,7 +22,10 @@ export type ApiEmployee = {
 
 export type ApiAction = {
   actionName: string;
+  phase: string | null;
   triggerFieldsJson: string;
+  documentsJson: string;
+  recipientsJson: string;
   isActive: boolean;
 };
 
@@ -106,7 +111,20 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function fetchEmployeeDetailData(employeeId: string) {
-  const employee = await requestJson<ApiEmployee>(`/employees/${employeeId}`);
+  const employeeResponse = await getEmployeeById(employeeId);
+  const employee: ApiEmployee = {
+    ...employeeResponse,
+    email: employeeResponse.email ?? null,
+    imageUrl: employeeResponse.imageUrl ?? null,
+    hireDate: employeeResponse.hireDate ?? null,
+    numberOfVacationDays: employeeResponse.numberOfVacationDays ?? null,
+    terminationDate: employeeResponse.terminationDate ?? null,
+    github: employeeResponse.github ?? null,
+    department: employeeResponse.department ?? null,
+    branch: employeeResponse.branch ?? null,
+    level: employeeResponse.level ?? null,
+    birthDayAndMonth: employeeResponse.birthDayAndMonth ?? null,
+  };
   const [actions, documents, auditLogs] = await Promise.all([
     requestJson<ApiAction[]>('/api/v1/actions'),
     requestJson<ApiDocument[]>(`/api/v1/documents/${employeeId}`),

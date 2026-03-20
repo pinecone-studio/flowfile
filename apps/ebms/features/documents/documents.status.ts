@@ -104,12 +104,34 @@ export function buildRecipients(reviews: ApiReviewRequest[]): DocumentRecipient[
 
   for (const review of reviews) {
     const name = review.reviewerName?.trim() || review.reviewerEmail;
-    if (!unique.has(review.reviewerEmail)) {
-      unique.set(review.reviewerEmail, {
+    const existing = unique.get(review.reviewerEmail);
+    const nextRecipient: DocumentRecipient = {
         id: review.id,
         name,
         initials: toInitials(name),
-      });
+        role: formatSignerRole(review.signerRole),
+        status:
+          review.status === 'approved'
+            ? 'signed'
+            : review.status === 'rejected'
+              ? 'rejected'
+              : 'waiting',
+        approvedAt: review.approvedAt,
+      };
+
+    if (!existing) {
+      unique.set(review.reviewerEmail, nextRecipient);
+      continue;
+    }
+
+    const rankByStatus = {
+      signed: 3,
+      rejected: 2,
+      waiting: 1,
+    } as const;
+
+    if (rankByStatus[nextRecipient.status] >= rankByStatus[existing.status]) {
+      unique.set(review.reviewerEmail, nextRecipient);
     }
   }
 

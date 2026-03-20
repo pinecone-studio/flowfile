@@ -1,8 +1,8 @@
 'use client';
 
 import { startTransition, useMemo, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { useSearchParams } from 'next/navigation';
-import { sidebarUser } from '../../showcase/showcase.data';
 import { DetailNoticeBanner } from './DetailNoticeBanner';
 import { triggerEmployeeAction } from './employeeDetail.api';
 import { EmployeeDetailPage } from './EmployeeDetailPage';
@@ -48,8 +48,35 @@ function resolveDisplayProfile(
   };
 }
 
+function formatEmailSummary(emails: string[]) {
+  if (emails.length === 0) {
+    return null;
+  }
+
+  if (emails.length <= 3) {
+    return emails.join(', ');
+  }
+
+  return `${emails.slice(0, 3).join(', ')} +${emails.length - 3} more`;
+}
+
+function buildTriggerNotice(
+  action: TriggerActionDefinition,
+  result: Awaited<ReturnType<typeof triggerEmployeeAction>>,
+) {
+  const reviewerEmails = Array.from(
+    new Set(result.reviewRequests.map((reviewRequest) => reviewRequest.reviewerEmail)),
+  );
+  const reviewerSummary = formatEmailSummary(reviewerEmails);
+
+  return reviewerSummary
+    ? `${action.label} started. ${result.documentsQueued} document(s) queued. Initial review requests were created for ${reviewerSummary}.`
+    : `${action.label} started. ${result.documentsQueued} document(s) queued.`;
+}
+
 export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) {
   const searchParams = useSearchParams();
+  const { user } = useUser();
   const resolvedEmployeeId = employeeId ?? searchParams.get('employeeId') ?? '';
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedAction, setSelectedAction] = useState<TriggerActionDefinition | null>(null);
@@ -62,6 +89,10 @@ export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) 
     [detail.actions],
   );
   const profile = resolveDisplayProfile(resolvedEmployeeId, detail);
+  const requesterEmail =
+    user?.primaryEmailAddress?.emailAddress ??
+    user?.emailAddresses[0]?.emailAddress ??
+    null;
 
   if (!resolvedEmployeeId) {
     return (
@@ -98,13 +129,13 @@ export function EmployeeDetailClient({ employeeId }: EmployeeDetailClientProps) 
         employeeId: resolvedEmployeeId,
         action: selectedAction.actionName,
         payload: buildTriggerPayload(selectedAction, draftValues, detail.employee),
-        requestedByEmail: sidebarUser.email,
+        requestedByEmail: requesterEmail ?? undefined,
       });
 
       setSelectedAction(null);
       setNotice({
         tone: 'success',
-        message: `${selectedAction.label} started. ${result.documentsQueued} document(s) queued.`,
+        message: buildTriggerNotice(selectedAction, result),
       });
       startTransition(() => setRefreshKey((current) => current + 1));
     } catch (error) {

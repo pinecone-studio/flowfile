@@ -1,3 +1,4 @@
+import { getEmployees } from '../../lib/employee/api';
 import { requestGraphQL, requestJson } from '../../lib/api/client';
 
 export type ApiEmployee = {
@@ -153,12 +154,19 @@ const documentsDashboardQuery = `
 `;
 
 export async function fetchDocumentsDashboard() {
-  const dashboard = await requestGraphQL<DocumentsDashboardResponse>(
-    documentsDashboardQuery,
-  );
+  const [employees, dashboard] = await Promise.all([
+    getEmployees(),
+    requestGraphQL<DocumentsDashboardResponse>(documentsDashboardQuery),
+  ]);
 
   return {
-    employees: dashboard.employees,
+    employees: employees.map((employee) => ({
+      ...employee,
+      email: employee.email ?? null,
+      imageUrl: employee.imageUrl ?? null,
+      department: employee.department ?? null,
+      branch: employee.branch ?? null,
+    })),
     jobs: dashboard.jobs,
     generatedDocuments: dashboard.generatedDocuments,
     reviewRequests: dashboard.reviewRequests,

@@ -1,4 +1,5 @@
 import type { EmployeeDto } from './types';
+import { resolveImageSrc } from '../assets/resolveImageSrc';
 import type { EmployeeCardRecord } from '../../features/showcase/showcase.data';
 
 function mapStatus(
@@ -63,7 +64,7 @@ export function mapEmployeeToPreviewCardData(
     id: employee.id,
     status: mapStatus(employee.status),
     statusTone: mapStatusTone(employee.status),
-    image: employee.imageUrl || '/image%205.svg',
+    image: resolveImageSrc(employee.imageUrl, '/image%205.svg'),
     role: employee.level ?? 'Unknown Position',
     name: `${employee.firstName}.${employee.lastName}`,
     email: employee.email ?? '-',

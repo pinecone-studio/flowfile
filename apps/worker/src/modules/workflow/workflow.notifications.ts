@@ -37,7 +37,8 @@ export const buildReviewNotifications = (input: {
   job: JobLike;
   documents: DocumentLike[];
   reviewRequests: ReviewRequestLike[];
-  baseUrl?: string;
+  appBaseUrl?: string;
+  apiBaseUrl?: string;
 }) => {
   const documentsById = new Map(
     input.documents.map((document) => [document.id, document]),
@@ -46,10 +47,10 @@ export const buildReviewNotifications = (input: {
   return input.reviewRequests.map<WorkflowNotification>((reviewRequest) => {
     const document = documentsById.get(reviewRequest.documentId);
     const reviewUrl = buildAbsoluteUrl(
-      input.baseUrl,
+      input.appBaseUrl,
       buildReviewUrl(reviewRequest.reviewToken),
     );
-    const documentUrl = buildAbsoluteUrl(input.baseUrl, document?.fileUrl ?? null);
+    const documentUrl = buildAbsoluteUrl(input.apiBaseUrl, document?.fileUrl ?? null);
     const intro = `${reviewRequest.reviewerName ?? reviewRequest.reviewerEmail}, please review and sign ${
       document?.fileName ?? 'the requested document'
     }.`;
@@ -92,7 +93,7 @@ export const buildDocumentsGeneratedNotifications = (input: {
   employee: EmployeeLike;
   documents: DocumentWithFileUrl[];
   recipients: WorkflowRecipient[];
-  baseUrl?: string;
+  apiBaseUrl?: string;
 }) => {
   return input.recipients.map<WorkflowNotification>((recipient) => {
     const employeeName =
@@ -107,7 +108,7 @@ export const buildDocumentsGeneratedNotifications = (input: {
       `Recipient role: ${titleCaseRole(recipient.role)}`,
       `Generated documents: ${input.documents.length}`,
     ];
-    const links = buildDocumentLinks(input.documents, input.baseUrl);
+    const links = buildDocumentLinks(input.documents, input.apiBaseUrl);
 
     return {
       type: 'documents_generated',
@@ -128,7 +129,7 @@ export const buildDocumentsGeneratedNotifications = (input: {
         jobId: input.job.id,
         employeeId: input.employee.id,
         role: recipient.role,
-        documents: buildDocumentMetadata(input.documents, input.baseUrl),
+        documents: buildDocumentMetadata(input.documents, input.apiBaseUrl),
       },
     };
   });
@@ -138,13 +139,13 @@ export const buildCompletionNotifications = (input: {
   job: JobLike;
   documents: DocumentWithFileUrl[];
   recipients: WorkflowRecipient[];
-  baseUrl?: string;
+  apiBaseUrl?: string;
 }) => {
   return input.recipients.map<WorkflowNotification>((recipient) => {
     const intro = `${
       recipient.name ?? recipient.email
     }, the ${input.job.actionName} workflow has completed.`;
-    const links = buildDocumentLinks(input.documents, input.baseUrl);
+    const links = buildDocumentLinks(input.documents, input.apiBaseUrl);
     const paragraphs = [
       `Completed documents: ${input.documents.length}`,
       `Recipient role: ${titleCaseRole(recipient.role)}`,
@@ -167,7 +168,7 @@ export const buildCompletionNotifications = (input: {
       }),
       metadata: {
         jobId: input.job.id,
-        documents: buildDocumentMetadata(input.documents, input.baseUrl),
+        documents: buildDocumentMetadata(input.documents, input.apiBaseUrl),
       },
     };
   });

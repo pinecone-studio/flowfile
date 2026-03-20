@@ -1,3 +1,4 @@
+import { resolveImageSrc } from '../../../lib/assets/resolveImageSrc';
 import type {
   ApiAction,
   ApiAuditLog,
@@ -14,6 +15,9 @@ export type TriggerActionDefinition = {
   actionName: string;
   label: string;
   fields: string[];
+  phase: string | null;
+  documents: string[];
+  recipientRoles: string[];
 };
 
 const actionLabelMap: Record<string, string> = {
@@ -35,6 +39,50 @@ const actionOrder = ['add_employee', 'change_position', 'salary_increase', 'offb
 function safeParseFields(value: string) {
   try {
     return JSON.parse(value || '[]') as string[];
+  } catch {
+    return [];
+  }
+}
+
+type RawActionDocumentConfig = {
+  id?: string;
+  documentType?: string;
+  fileName?: string;
+  template?: string;
+  templateName?: string;
+};
+
+function safeParseRecipients(value: string) {
+  try {
+    const parsed = JSON.parse(value || '[]') as Array<
+      string | { roleKey?: string | null }
+    >;
+
+    return parsed
+      .map((recipient) =>
+        typeof recipient === 'string' ? recipient : recipient.roleKey ?? '',
+      )
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function safeParseDocuments(value: string) {
+  try {
+    const parsed = JSON.parse(value || '[]') as RawActionDocumentConfig[];
+
+    return parsed
+      .map(
+        (document, index) =>
+          document.documentType ??
+          document.id ??
+          document.fileName ??
+          document.templateName ??
+          document.template ??
+          `document_${index + 1}`,
+      )
+      .filter(Boolean);
   } catch {
     return [];
   }
@@ -97,6 +145,9 @@ export function toTriggerActions(actions: ApiAction[]) {
       actionName: action.actionName,
       label: actionLabelMap[action.actionName],
       fields: safeParseFields(action.triggerFieldsJson),
+      phase: action.phase,
+      documents: safeParseDocuments(action.documentsJson),
+      recipientRoles: safeParseRecipients(action.recipientsJson),
     })) satisfies TriggerActionDefinition[];
 }
 
@@ -138,7 +189,7 @@ export function toEmployeeProfile(
 
   return {
     id: employee.id,
-    image: employee.imageUrl || '/image%205.svg',
+    image: resolveImageSrc(employee.imageUrl, '/image%205.svg'),
     code: employee.employeeCode,
     status: employee.status === 'TERMINATED' ? 'Terminated' : employee.status === 'INACTIVE' ? 'Inactive' : 'Active',
     name: toDisplayName(employee),

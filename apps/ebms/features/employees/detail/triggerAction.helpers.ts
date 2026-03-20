@@ -2,10 +2,43 @@ import type { ApiEmployee } from './employeeDetail.api';
 import type { TriggerActionDefinition } from './employeeDetail.transform';
 
 export const fallbackTriggerActions: TriggerActionDefinition[] = [
-  { actionName: 'add_employee', label: 'Onboard', fields: ['status', 'hireDate'] },
-  { actionName: 'change_position', label: 'Change Role', fields: ['department', 'branch', 'level'] },
-  { actionName: 'salary_increase', label: 'Promote', fields: ['level', 'numberOfVacationDays', 'isSalaryCompany'] },
-  { actionName: 'offboard_employee', label: 'Terminate', fields: ['terminationDate', 'status'] },
+  {
+    actionName: 'add_employee',
+    label: 'Onboard',
+    fields: ['status', 'hireDate'],
+    phase: 'onboarding',
+    documents: [
+      'employment_contract',
+      'probation_order',
+      'job_description',
+      'nda',
+    ],
+    recipientRoles: ['hr_team', 'department_chief', 'branch_manager'],
+  },
+  {
+    actionName: 'change_position',
+    label: 'Change Role',
+    fields: ['department', 'branch', 'level'],
+    phase: 'working',
+    documents: ['job_description', 'position_update_order', 'contract_addendum'],
+    recipientRoles: ['hr_team', 'department_chief', 'branch_manager'],
+  },
+  {
+    actionName: 'salary_increase',
+    label: 'Promote',
+    fields: ['level', 'numberOfVacationDays', 'isSalaryCompany'],
+    phase: 'working',
+    documents: ['salary_increase_order'],
+    recipientRoles: ['hr_team', 'department_chief'],
+  },
+  {
+    actionName: 'offboard_employee',
+    label: 'Terminate',
+    fields: ['terminationDate', 'status'],
+    phase: 'offboarding',
+    documents: ['termination_order', 'handover_sheet'],
+    recipientRoles: ['hr_team', 'department_chief', 'ceo'],
+  },
 ];
 
 function toDraftValue(value: unknown) {
