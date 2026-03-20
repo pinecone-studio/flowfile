@@ -116,14 +116,15 @@ jobs:
             exit 1
           }
 
-      - name: Validate worker auth secrets
+      - name: Check optional worker auth secrets
         env:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           CLERK_JWT_KEY: ${{ secrets.CLERK_JWT_KEY }}
         run: |
           if [ -z "$CLERK_SECRET_KEY" ] && [ -z "$CLERK_JWT_KEY" ]; then
-            echo "::error::Missing GitHub Actions secret CLERK_SECRET_KEY or CLERK_JWT_KEY for worker auth"
-            exit 1
+            echo "::warning::Skipping Clerk worker auth secret sync because CLERK_SECRET_KEY and CLERK_JWT_KEY are both unset"
+          else
+            echo "Clerk worker auth secret detected"
           fi
 
       - name: Sync worker runtime secrets

@@ -40,7 +40,7 @@ const secondaryItems: NavItem[] = [
   {
     href: '/approval',
     label: 'Approval',
-    icon: SquarePen,
+    icon: SquarePen, 
   },
 ];
 
@@ -56,8 +56,8 @@ export function Sidebar() {
   const email = user?.primaryEmailAddress?.emailAddress || 'No email available';
 
   return (
-    <aside className="h-screen w-[var(--app-sidebar-width)] min-w-[var(--app-sidebar-width)] max-w-[var(--app-sidebar-width)] shrink-0 overflow-y-auto border-r border-r-white/5 bg-[linear-gradient(180deg,#122448_0%,#0d1c3c_52%,#081226_100%)]">
-      <div className="flex h-full min-h-screen flex-col px-4 pb-6 pt-6">
+    <aside className="sticky top-0 h-screen w-[var(--app-sidebar-width)] min-w-[var(--app-sidebar-width)] max-w-[var(--app-sidebar-width)] shrink-0 self-start overflow-y-auto border-r border-r-white/5 bg-[linear-gradient(180deg,#122448_0%,#0d1c3c_52%,#081226_100%)]">
+      <div className="flex min-h-full flex-col px-4 pb-6 pt-6">
         <div className="flex items-center gap-3 px-2">
           <div className="relative shrink-0">
             <UserButton

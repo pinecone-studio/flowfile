@@ -8,8 +8,11 @@ import type {
 type ApprovalSummary = {
   reviewerEmail: string;
   reviewerName: string | null;
+  signerRole: string;
+  signOrder: number;
   approvedAt: string | null;
   signMethod: string | null;
+  signatureImageUrl: string | null;
 };
 
 type WorkflowDocumentInput = {
@@ -64,6 +67,85 @@ function stringifyTemplateValue(value: unknown): string {
   return String(value);
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function normalizeTemplateTokenKey(value: string) {
+  return value
+    .trim()
+    .replace(/[^a-zA-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .toLowerCase();
+}
+
+function formatRoleLabel(value: string | null | undefined) {
+  if (!value) {
+    return 'Signer';
+  }
+
+  return value
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function formatApprovedAt(value: string | null | undefined) {
+  if (!value) {
+    return 'Pending signature';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+function buildSignatureMarkup(signatureImageUrl: string | null | undefined) {
+  if (!signatureImageUrl) {
+    return '';
+  }
+
+  return `<img src="${signatureImageUrl}" alt="Signature" style="display:block;max-width:100%;max-height:72px;object-fit:contain;" />`;
+}
+
+function buildTemplateSignatureSlot(input: {
+  content: string;
+  kind: 'document' | 'review';
+  signerRole?: string;
+  signOrder?: number;
+}) {
+  const attributes = [
+    `data-live-signature="${input.kind}"`,
+    input.signerRole
+      ? `data-signer-role="${escapeHtml(input.signerRole)}"`
+      : null,
+    typeof input.signOrder === 'number'
+      ? `data-sign-order="${input.signOrder}"`
+      : null,
+    'style="display:inline-flex;min-height:72px;min-width:160px;align-items:center;"',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return `<span ${attributes}>${input.content}</span>`;
+}
+
 function appendFlattenedValues(
   target: Record<string, string>,
   prefix: string,
@@ -102,12 +184,20 @@ function buildTemplateData(input: WorkflowDocumentInput) {
         `${recipient.signOrder}. ${recipient.role}: ${recipient.name ?? recipient.email}`,
     )
     .join('\n');
-  const signatureValue =
+  const hasApprovedSignature = (input.approvalSummary ?? []).some((approval) =>
+    Boolean(approval.approvedAt),
+  );
+  const signatureInner =
     input.renderSignatureImage && input.signatureImageUrl
-      ? `<img src="${input.signatureImageUrl}" alt="Signature" style="display:block;max-width:100%;max-height:72px;object-fit:contain;" />`
-      : approvalSummaryText
+      ? buildSignatureMarkup(input.signatureImageUrl)
+      : hasApprovedSignature
         ? 'Signed electronically'
         : '';
+  const signatureValue =
+    buildTemplateSignatureSlot({
+      content: signatureInner,
+      kind: 'document',
+    });
 
   const data: Record<string, string> = {
     employeeName,
@@ -157,7 +247,176 @@ function buildTemplateData(input: WorkflowDocumentInput) {
     data[key] = stringifyTemplateValue(value);
   }
 
+  for (const approval of input.approvalSummary ?? []) {
+    const roleKey =
+      normalizeTemplateTokenKey(approval.signerRole) ||
+      `signer_${approval.signOrder}`;
+    const signatureInnerMarkup =
+      input.renderSignatureImage && approval.signatureImageUrl
+        ? buildSignatureMarkup(approval.signatureImageUrl)
+        : approval.approvedAt
+          ? 'Signed electronically'
+          : '';
+    const signatureMarkup = buildTemplateSignatureSlot({
+      content: signatureInnerMarkup,
+      kind: 'review',
+      signerRole: approval.signerRole,
+      signOrder: approval.signOrder,
+    });
+    const signerName = approval.reviewerName ?? approval.reviewerEmail;
+
+    data[`signature_${roleKey}`] = signatureMarkup;
+    data[`signature_${roleKey}_${approval.signOrder}`] = signatureMarkup;
+    data[`reviewerName_${roleKey}`] = signerName;
+    data[`reviewerName_${roleKey}_${approval.signOrder}`] = signerName;
+    data[`approvedAt_${roleKey}`] = approval.approvedAt ?? '';
+    data[`approvedAt_${roleKey}_${approval.signOrder}`] =
+      approval.approvedAt ?? '';
+    data[`approvalStatus_${roleKey}`] = approval.approvedAt
+      ? formatApprovedAt(approval.approvedAt)
+      : 'Pending signature';
+    data[`approvalStatus_${roleKey}_${approval.signOrder}`] = approval.approvedAt
+      ? formatApprovedAt(approval.approvedAt)
+      : 'Pending signature';
+  }
+
   return data;
+}
+
+function buildSignatureCardsHtml(
+  input: WorkflowDocumentInput,
+  options?: { roles?: 'hr' | 'other' },
+) {
+  const approvalMap = new Map(
+    (input.approvalSummary ?? []).map((approval) => [
+      `${approval.reviewerEmail}:${approval.signerRole}:${approval.signOrder}`,
+      approval,
+    ]),
+  );
+
+  const signerRows = input.recipients
+    .slice()
+    .sort((left, right) => left.signOrder - right.signOrder)
+    .map((recipient) => {
+      const key = `${recipient.email}:${recipient.role}:${recipient.signOrder}`;
+      const approval = approvalMap.get(key);
+      const isHrRole = recipient.role.toLowerCase().includes('hr');
+
+      return {
+        signerRole: recipient.role,
+        signOrder: recipient.signOrder,
+        roleLabel: formatRoleLabel(recipient.role),
+        signerName: approval?.reviewerName ?? recipient.name ?? recipient.email,
+        signerEmail: approval?.reviewerEmail ?? recipient.email,
+        statusLabel: approval?.approvedAt
+          ? `Signed ${formatApprovedAt(approval.approvedAt)}`
+          : 'Awaiting signature',
+        signatureMarkup:
+          input.renderSignatureImage && approval?.signatureImageUrl
+            ? buildSignatureMarkup(approval.signatureImageUrl)
+            : approval?.approvedAt
+              ? '<span style="color:#2f6c42;font-weight:600;">Signed electronically</span>'
+              : '<span style="color:#8b97ab;">Pending signature</span>',
+        isHrRole,
+      };
+    })
+    .filter((row) =>
+      options?.roles === 'hr'
+        ? row.isHrRole
+        : options?.roles === 'other'
+          ? !row.isHrRole
+          : true,
+    );
+
+  if (signerRows.length === 0) {
+    return '';
+  }
+
+  return signerRows
+    .map(
+      (row) => `
+        <article
+          data-signer-card="true"
+          data-signer-role="${escapeHtml(row.signerRole)}"
+          data-sign-order="${row.signOrder}"
+          style="border:1px solid #dbe4f0;border-radius:16px;padding:16px;background:#ffffff;"
+        >
+          <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+            <div>
+              <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#64748b;">Step ${row.signOrder}</div>
+              <div style="margin-top:6px;font-size:17px;font-weight:600;color:#0f172a;">${escapeHtml(row.roleLabel)}</div>
+              <div style="margin-top:4px;font-size:14px;color:#475569;">${escapeHtml(row.signerName)} · ${escapeHtml(row.signerEmail)}</div>
+            </div>
+            <div
+              data-signer-status="true"
+              style="font-size:13px;font-weight:600;color:${row.statusLabel.startsWith('Signed') ? '#2f6c42' : '#7c5b16'};"
+            >
+              ${escapeHtml(row.statusLabel)}
+            </div>
+          </div>
+          <div
+            data-signature-slot="true"
+            style="margin-top:16px;min-height:88px;border:1px dashed #c9d6e4;border-radius:14px;padding:14px;background:#f8fbff;"
+          >
+            ${row.signatureMarkup}
+          </div>
+        </article>`,
+    )
+    .join('');
+}
+
+function buildSignatureSectionsHtml(input: WorkflowDocumentInput) {
+  const hrSectionCards = buildSignatureCardsHtml(input, { roles: 'hr' });
+  const otherSectionCards = buildSignatureCardsHtml(input, { roles: 'other' });
+
+  if (!hrSectionCards && !otherSectionCards) {
+    return '';
+  }
+
+  const hrSection = hrSectionCards
+    ? `
+      <section style="margin-top:22px;">
+        <h3 style="margin:0 0 14px;font-size:18px;color:#0f172a;">HR Section</h3>
+        <div style="display:grid;gap:14px;">
+          ${hrSectionCards}
+        </div>
+      </section>`
+    : '';
+
+  const otherSection = otherSectionCards
+    ? `
+      <section style="margin-top:${hrSection ? '22px' : '0'};">
+        <h3 style="margin:0 0 14px;font-size:18px;color:#0f172a;">Other Approvals</h3>
+        <div style="display:grid;gap:14px;">
+          ${otherSectionCards}
+        </div>
+      </section>`
+    : '';
+
+  return `
+    <section style="margin-top:32px;padding:24px;border:1px solid #dbe4f0;border-radius:22px;background:#f8fbff;">
+      <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#64748b;">Signature Preview</div>
+      <h2 style="margin:10px 0 8px;font-size:24px;color:#0f172a;">Approval Signatures</h2>
+      <p style="margin:0;color:#475569;line-height:1.7;">
+        Completed signatures appear in their signer section as the document moves through the workflow.
+      </p>
+      ${hrSection}
+      ${otherSection}
+    </section>`;
+}
+
+function appendHtmlBeforeClosingBody(html: string, sectionHtml: string) {
+  if (!sectionHtml) {
+    return html;
+  }
+
+  const bodyCloseIndex = html.lastIndexOf('</body>');
+
+  if (bodyCloseIndex >= 0) {
+    return `${html.slice(0, bodyCloseIndex)}${sectionHtml}${html.slice(bodyCloseIndex)}`;
+  }
+
+  return `${html}${sectionHtml}`;
 }
 
 function buildWorkflowMetadataHtml(input: WorkflowDocumentInput) {
@@ -242,13 +501,25 @@ export const buildWorkflowDocumentHtml = (input: WorkflowDocumentInput) => {
   }
 
   if (input.templateHtml?.trim()) {
-    return renderTemplateHtmlStrict(input.templateHtml, buildTemplateData(input), {
-      templateName: input.templateName,
-      documentType: input.documentType,
-    });
+    const renderedTemplate = renderTemplateHtmlStrict(
+      input.templateHtml,
+      buildTemplateData(input),
+      {
+        templateName: input.templateName,
+        documentType: input.documentType,
+      },
+    );
+
+    return appendHtmlBeforeClosingBody(
+      renderedTemplate,
+      buildSignatureSectionsHtml(input),
+    );
   }
 
-  return `${defaultDocumentHtml(input)}${buildWorkflowMetadataHtml(input)}`;
+  return appendHtmlBeforeClosingBody(
+    defaultDocumentHtml(input),
+    `${buildWorkflowMetadataHtml(input)}${buildSignatureSectionsHtml(input)}`,
+  );
 };
 
 function decodeHtmlEntities(text: string) {

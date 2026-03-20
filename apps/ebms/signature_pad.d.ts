@@ -14,6 +14,7 @@ declare module 'signature_pad' {
 
     clear(): void;
     isEmpty(): boolean;
+    toDataURL(type?: string): string;
     off(): void;
   }
 }

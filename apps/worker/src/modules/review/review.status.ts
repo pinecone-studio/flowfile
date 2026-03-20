@@ -70,8 +70,11 @@ export async function syncDocumentAndJobStatus(
   const approvalSummary = documentReviews.map((review) => ({
     reviewerEmail: review.reviewerEmail,
     reviewerName: review.reviewerName,
+    signerRole: review.signerRole,
+    signOrder: review.signOrder,
     approvedAt: review.approvedAt,
     signMethod: review.signMethod,
+    signatureImageUrl: review.signatureImageUrl,
   }));
   const pdfBytes = buildWorkflowDocumentPdf({
     documentType: document.documentType,
