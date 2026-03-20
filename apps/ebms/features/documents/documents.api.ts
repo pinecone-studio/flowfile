@@ -73,6 +73,7 @@ export type ApiAuditLog = {
 };
 
 type DocumentsDashboardResponse = {
+  employees: ApiEmployee[];
   jobs: ApiJob[];
   generatedDocuments: ApiGeneratedDocument[];
   reviewRequests: ApiReviewRequest[];
@@ -81,6 +82,17 @@ type DocumentsDashboardResponse = {
 
 const documentsDashboardQuery = `
   query DocumentsDashboard {
+    employees {
+      id
+      firstName
+      lastName
+      email
+      imageUrl
+      department
+      branch
+      employeeCode
+      status
+    }
     jobs {
       id
       employeeId
@@ -141,13 +153,12 @@ const documentsDashboardQuery = `
 `;
 
 export async function fetchDocumentsDashboard() {
-  const [employees, dashboard] = await Promise.all([
-    requestJson<ApiEmployee[]>('/api/employees'),
-    requestGraphQL<DocumentsDashboardResponse>(documentsDashboardQuery, undefined, '/api/graphql'),
-  ]);
+  const dashboard = await requestGraphQL<DocumentsDashboardResponse>(
+    documentsDashboardQuery,
+  );
 
   return {
-    employees,
+    employees: dashboard.employees,
     jobs: dashboard.jobs,
     generatedDocuments: dashboard.generatedDocuments,
     reviewRequests: dashboard.reviewRequests,

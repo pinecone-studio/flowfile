@@ -60,12 +60,14 @@ export async function requestGraphQL<T>(
   query: string,
   variables?: Record<string, unknown>,
   path = '/graphql',
+  headers?: HeadersInit,
 ): Promise<T> {
   const response = await requestJson<{
     data?: T;
     errors?: Array<{ message?: string }>;
   }>(path, {
     method: 'POST',
+    headers,
     body: JSON.stringify({
       query,
       variables,
