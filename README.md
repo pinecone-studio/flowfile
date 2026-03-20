@@ -12,6 +12,7 @@
 - `.github/workflows/cd.yml` deploys both `apps/ebms` and `apps/worker` to Cloudflare on pushes to `main`.
 - `apps/worker` stays as the backend Cloudflare Worker.
 - Configure `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for deployment.
+- The Cloudflare token and account must point to the same account that owns the worker, `epas-db` D1 database, and `epas-docs` R2 bucket. For the worker deploy job, the token needs at least `Workers Scripts:Edit` and `D1:Edit`.
 - Configure worker auth secrets in GitHub Actions before enabling Clerk-protected worker routes:
   `CLERK_SECRET_KEY` or `CLERK_JWT_KEY`, plus optional `CLERK_AUTHORIZED_PARTIES`.
 - The worker deploy currently continues when those Clerk secrets are unset and only syncs them when present.
