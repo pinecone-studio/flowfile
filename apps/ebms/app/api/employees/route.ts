@@ -1,11 +1,3 @@
-<<<<<<< Updated upstream
-import { proxyToBackend } from '../backend-proxy';
-
-export async function GET() {
-  return proxyToBackend({
-    path: '/employees',
-    method: 'GET',
-=======
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { proxyEmployeesIndex } from './employeeProxy';
@@ -25,6 +17,5 @@ export async function GET() {
     headers: {
       'Content-Type': response.contentType,
     },
->>>>>>> Stashed changes
   });
 }

@@ -1,5 +1,3 @@
-import { render, screen } from '@testing-library/react';
-
 jest.mock('@clerk/nextjs/server', () => ({
   auth: jest.fn(async () => ({
     isAuthenticated: true,

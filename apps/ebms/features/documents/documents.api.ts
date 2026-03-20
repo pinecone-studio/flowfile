@@ -154,14 +154,6 @@ const documentsDashboardQuery = `
 `;
 
 export async function fetchDocumentsDashboard() {
-<<<<<<< Updated upstream
-  const dashboard = await requestGraphQL<DocumentsDashboardResponse>(
-    documentsDashboardQuery,
-  );
-
-  return {
-    employees: dashboard.employees,
-=======
   const [employees, dashboard] = await Promise.all([
     getEmployees(),
     requestGraphQL<DocumentsDashboardResponse>(documentsDashboardQuery),
@@ -175,7 +167,6 @@ export async function fetchDocumentsDashboard() {
       department: employee.department ?? null,
       branch: employee.branch ?? null,
     })),
->>>>>>> Stashed changes
     jobs: dashboard.jobs,
     generatedDocuments: dashboard.generatedDocuments,
     reviewRequests: dashboard.reviewRequests,

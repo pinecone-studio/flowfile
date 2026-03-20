@@ -9,7 +9,6 @@ import {
   Users,
 } from 'lucide-react';
 import { UserButton, useUser } from '@clerk/nextjs';
-import { resolveImageSrc } from '../../lib/assets/resolveImageSrc';
 import { matchesPath } from './components/MatchesPath';
 import { NavButton, NavItem } from './components/NavButton';
 import FlowFileLogo from './components/FlowFileLogo';
@@ -56,12 +55,6 @@ export function Sidebar() {
     'Authenticated User';
 
   const email = user?.primaryEmailAddress?.emailAddress || 'No email available';
-
-<<<<<<< Updated upstream
-=======
-  const avatar = resolveImageSrc(user?.imageUrl, '/pro5.png');
-
->>>>>>> Stashed changes
   return (
     <aside className="w-full shrink-0 border-b border-white/5 bg-[linear-gradient(180deg,#122448_0%,#0d1c3c_52%,#081226_100%)] md:h-screen md:w-[269px] md:border-b-0 md:border-r md:border-r-white/5">
       <div className="flex h-full flex-col px-4 pb-5 pt-5 md:px-4 md:pb-6 md:pt-6">
