@@ -142,8 +142,8 @@ const documentsDashboardQuery = `
 
 export async function fetchDocumentsDashboard() {
   const [employees, dashboard] = await Promise.all([
-    requestJson<ApiEmployee[]>('/employees'),
-    requestGraphQL<DocumentsDashboardResponse>(documentsDashboardQuery),
+    requestJson<ApiEmployee[]>('/api/employees'),
+    requestGraphQL<DocumentsDashboardResponse>(documentsDashboardQuery, undefined, '/api/graphql'),
   ]);
 
   return {
